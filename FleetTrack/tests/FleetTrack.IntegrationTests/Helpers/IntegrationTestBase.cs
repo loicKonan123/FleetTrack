@@ -1,7 +1,7 @@
-using FleetTrack.Infrastructure.Data;
-using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
 using FleetTrack.Domain.Entities;
+using FleetTrack.Infrastructure.Data;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace FleetTrack.IntegrationTests.Helpers;
 

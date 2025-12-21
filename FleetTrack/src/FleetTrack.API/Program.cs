@@ -18,10 +18,13 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.WriteIndented = true;
     });
 
+// JWT Authentication
+builder.Services.AddJwtAuthentication(builder.Configuration);
+
 // CORS
 builder.Services.AddCorsConfiguration();
 
-// Swagger/OpenAPI
+// Swagger/OpenAPI avec support JWT
 builder.Services.AddSwaggerConfiguration();
 
 var app = builder.Build();
@@ -54,6 +57,8 @@ else
     app.UseCors("Production");
 }
 
+// Authentication doit être avant Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

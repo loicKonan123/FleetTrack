@@ -21,6 +21,10 @@ public class FleetTrackDbContext : DbContext
     public DbSet<Maintenance> MaintenanceRecords => Set<Maintenance>();
     public DbSet<Zone> Zones => Set<Zone>();
 
+    // Authentication
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Role> Roles => Set<Role>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

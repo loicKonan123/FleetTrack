@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<IVehicleService, VehicleService>();
         services.AddScoped<IDriverService, DriverService>();
         services.AddScoped<IMissionService, MissionService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }
