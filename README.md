@@ -292,3 +292,4 @@ Ce projet est développé dans un cadre éducatif/professionnel.
 ---
 
 **🎯 Prochaine étape recommandée :** Consultez [documentation/INDEX.md](documentation/INDEX.md) pour explorer toute la documentation !
+
