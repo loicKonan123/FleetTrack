@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{ECF1F2E0-D182-4C9B-A67B-ECB5CFCD6532}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FleetTrack.Domain", "src\FleetTrack.Domain\FleetTrack.Domain.csproj", "{BA8CB906-2EF7-47AD-B8E7-EE24966C799C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FleetTrack.Application", "src\FleetTrack.Application\FleetTrack.Application.csproj", "{E7E52C09-C8F1-4B1A-B341-0A7D91052139}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FleetTrack.Infrastructure", "src\FleetTrack.Infrastructure\FleetTrack.Infrastructure.csproj", "{0929716B-C17B-45EB-AB14-C65EE87BCD5D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FleetTrack.API", "src\FleetTrack.API\FleetTrack.API.csproj", "{FBBED14F-7B87-4333-87B0-1B46462851B4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B14F65EE-9E56-4086-9625-9675C9BD1FC8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FleetTrack.UnitTests", "tests\FleetTrack.UnitTests\FleetTrack.UnitTests.csproj", "{9EFC8314-D543-4340-8568-FD35020972EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FleetTrack.IntegrationTests", "tests\FleetTrack.IntegrationTests\FleetTrack.IntegrationTests.csproj", "{F6576170-748B-4C46-A548-52D2F2B3494E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BA8CB906-2EF7-47AD-B8E7-EE24966C799C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA8CB906-2EF7-47AD-B8E7-EE24966C799C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA8CB906-2EF7-47AD-B8E7-EE24966C799C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA8CB906-2EF7-47AD-B8E7-EE24966C799C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7E52C09-C8F1-4B1A-B341-0A7D91052139}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7E52C09-C8F1-4B1A-B341-0A7D91052139}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7E52C09-C8F1-4B1A-B341-0A7D91052139}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7E52C09-C8F1-4B1A-B341-0A7D91052139}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0929716B-C17B-45EB-AB14-C65EE87BCD5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0929716B-C17B-45EB-AB14-C65EE87BCD5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0929716B-C17B-45EB-AB14-C65EE87BCD5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0929716B-C17B-45EB-AB14-C65EE87BCD5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBBED14F-7B87-4333-87B0-1B46462851B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBBED14F-7B87-4333-87B0-1B46462851B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBBED14F-7B87-4333-87B0-1B46462851B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBBED14F-7B87-4333-87B0-1B46462851B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EFC8314-D543-4340-8568-FD35020972EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EFC8314-D543-4340-8568-FD35020972EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EFC8314-D543-4340-8568-FD35020972EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EFC8314-D543-4340-8568-FD35020972EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6576170-748B-4C46-A548-52D2F2B3494E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6576170-748B-4C46-A548-52D2F2B3494E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6576170-748B-4C46-A548-52D2F2B3494E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6576170-748B-4C46-A548-52D2F2B3494E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BA8CB906-2EF7-47AD-B8E7-EE24966C799C} = {ECF1F2E0-D182-4C9B-A67B-ECB5CFCD6532}
+		{E7E52C09-C8F1-4B1A-B341-0A7D91052139} = {ECF1F2E0-D182-4C9B-A67B-ECB5CFCD6532}
+		{0929716B-C17B-45EB-AB14-C65EE87BCD5D} = {ECF1F2E0-D182-4C9B-A67B-ECB5CFCD6532}
+		{FBBED14F-7B87-4333-87B0-1B46462851B4} = {ECF1F2E0-D182-4C9B-A67B-ECB5CFCD6532}
+		{9EFC8314-D543-4340-8568-FD35020972EF} = {B14F65EE-9E56-4086-9625-9675C9BD1FC8}
+		{F6576170-748B-4C46-A548-52D2F2B3494E} = {B14F65EE-9E56-4086-9625-9675C9BD1FC8}
+	EndGlobalSection
+EndGlobal

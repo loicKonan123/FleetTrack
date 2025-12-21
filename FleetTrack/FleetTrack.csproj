@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <OutputType>Library</OutputType>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Références aux projets de la solution -->
+    <ProjectReference Include="src\FleetTrack.API\FleetTrack.API.csproj" />
+    <ProjectReference Include="src\FleetTrack.Application\FleetTrack.Application.csproj" />
+    <ProjectReference Include="src\FleetTrack.Domain\FleetTrack.Domain.csproj" />
+    <ProjectReference Include="src\FleetTrack.Infrastructure\FleetTrack.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <!-- NOTE: Ce projet root sert uniquement de conteneur pour la solution.
+       Le vrai projet de démarrage est src/FleetTrack.API/FleetTrack.API.csproj -->
+
+</Project>
