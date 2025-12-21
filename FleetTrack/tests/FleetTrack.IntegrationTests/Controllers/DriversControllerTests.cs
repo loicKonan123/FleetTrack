@@ -250,7 +250,6 @@ public class DriversControllerTests : IntegrationTestBase
             LastName = "Name",
             Email = "updated@test.com",
             PhoneNumber = "+33687654321",
-            LicenseNumber = "FR123456789",
             LicenseExpiryDate = DateTime.UtcNow.AddYears(6),
             Status = DriverStatus.OnDuty
         };

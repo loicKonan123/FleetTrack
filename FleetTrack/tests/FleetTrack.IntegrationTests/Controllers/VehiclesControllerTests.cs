@@ -253,11 +253,7 @@ public class VehiclesControllerTests : IntegrationTestBase
         {
             Brand = "Toyota",
             Model = "Hilux",
-            Year = 2023,
-            Type = VehicleType.Truck,
-            Status = VehicleStatus.Maintenance,
-            FuelType = FuelType.Diesel,
-            FuelCapacity = 80.0,
+            Status = VehicleStatus.InMaintenance,
             CurrentFuelLevel = 30.0,
             Mileage = 20000
         };
@@ -268,8 +264,8 @@ public class VehiclesControllerTests : IntegrationTestBase
         // Assert
         result.Should().NotBeNull();
         result!.Id.Should().Be(vehicleId);
-        result.Status.Should().Be(VehicleStatus.Maintenance);
-        result.CurrentFuelLevel.Should().Be(30.0m);
+        result.Status.Should().Be(VehicleStatus.InMaintenance);
+        result.CurrentFuelLevel.Should().Be(30.0);
         result.Mileage.Should().Be(20000);
     }
 
@@ -284,11 +280,7 @@ public class VehiclesControllerTests : IntegrationTestBase
         {
             Brand = "Toyota",
             Model = "Hilux",
-            Year = 2023,
-            Type = VehicleType.Truck,
             Status = VehicleStatus.Available,
-            FuelType = FuelType.Diesel,
-            FuelCapacity = 80.0,
             CurrentFuelLevel = 65.0,
             Mileage = 15000
         };

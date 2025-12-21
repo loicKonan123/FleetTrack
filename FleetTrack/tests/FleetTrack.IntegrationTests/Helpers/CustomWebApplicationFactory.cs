@@ -18,7 +18,7 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
         {
             // Supprimer le DbContext existant
             var descriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>));
+                d => d.ServiceType == typeof(DbContextOptions<FleetTrackDbContext>));
 
             if (descriptor != null)
             {
@@ -26,7 +26,7 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
             }
 
             // Ajouter un DbContext en mémoire pour les tests
-            services.AddDbContext<ApplicationDbContext>(options =>
+            services.AddDbContext<FleetTrackDbContext>(options =>
             {
                 options.UseInMemoryDatabase("InMemoryFleetTrackTest");
             });
@@ -36,7 +36,7 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
             using (var scope = serviceProvider.CreateScope())
             {
                 var scopedServices = scope.ServiceProvider;
-                var db = scopedServices.GetRequiredService<ApplicationDbContext>();
+                var db = scopedServices.GetRequiredService<FleetTrackDbContext>();
 
                 // Assurer que la base de données est créée
                 db.Database.EnsureCreated();

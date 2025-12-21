@@ -26,7 +26,7 @@ public class IntegrationTestBase : IClassFixture<CustomWebApplicationFactory<Pro
     protected async Task ClearDatabaseAsync()
     {
         using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var context = scope.ServiceProvider.GetRequiredService<FleetTrackDbContext>();
 
         context.GpsPositions.RemoveRange(context.GpsPositions);
         context.Waypoints.RemoveRange(context.Waypoints);
@@ -43,10 +43,10 @@ public class IntegrationTestBase : IClassFixture<CustomWebApplicationFactory<Pro
     /// <summary>
     /// Obtient le contexte de base de données pour insérer des données de test
     /// </summary>
-    protected ApplicationDbContext GetDbContext()
+    protected FleetTrackDbContext GetDbContext()
     {
         var scope = _factory.Services.CreateScope();
-        return scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        return scope.ServiceProvider.GetRequiredService<FleetTrackDbContext>();
     }
 
     /// <summary>
