@@ -1,9 +1,18 @@
 # 🚚 FleetTrack - Système de Gestion de Flotte
 
+![.NET CI/CD](https://github.com/loicKonan123/FleetTrack/actions/workflows/dotnet-ci.yml/badge.svg)
+![.NET Version](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)
+![Tests](https://img.shields.io/badge/tests-82%20passing-success)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 **Version:** 1.0
-**Date:** 2025-12-20
+**Date:** Décembre 2025
 **Framework:** .NET 8.0
 **Architecture:** Clean Architecture
+
+> Système complet de gestion de flotte avec tests automatisés et CI/CD
+
+[Documentation Complète](documentation/) | [Guide GitHub](GITHUB_GUIDE.md) | [Guide Tests](TESTS_GUIDE.md) | [API Swagger](http://localhost:5115/swagger)
 
 ---
 
@@ -101,12 +110,23 @@ Vous aurez alors :
 ```
 backend_c#/
 ├── FleetTrack/
-│   └── src/
-│       ├── FleetTrack.Domain/         # Entités, Enums (couche métier)
-│       ├── FleetTrack.Application/    # Services, DTOs, Interfaces
-│       ├── FleetTrack.Infrastructure/ # Repositories, DbContext, EF Core
-│       └── FleetTrack.API/            # Controllers, Middlewares, Program.cs
-├── documentation/                      # 📚 TOUTE LA DOCUMENTATION
+│   ├── src/
+│   │   ├── FleetTrack.Domain/         # Entités, Enums (couche métier)
+│   │   ├── FleetTrack.Application/    # Services, DTOs, Interfaces
+│   │   ├── FleetTrack.Infrastructure/ # Repositories, DbContext, EF Core
+│   │   └── FleetTrack.API/            # Controllers, Middlewares, Program.cs, Dockerfile
+│   ├── tests/
+│   │   ├── FleetTrack.UnitTests/      # ✅ 60 tests unitaires
+│   │   └── FleetTrack.IntegrationTests/ # ✅ 22 tests d'intégration
+│   └── FleetTrack.sln                 # Solution .NET
+├── .github/
+│   └── workflows/
+│       └── dotnet-ci.yml              # 🚀 Pipeline CI/CD GitHub Actions
+├── documentation/                      # 📚 Documentation du projet
+├── run-tests.ps1                      # Script PowerShell d'exécution des tests
+├── run-tests.sh                       # Script Bash d'exécution des tests
+├── TESTS_GUIDE.md                     # Guide complet des tests
+├── GITHUB_GUIDE.md                    # Guide GitHub (1000+ lignes)
 └── README.md                          # Ce fichier
 ```
 
@@ -242,11 +262,132 @@ dotnet ef database update --project ../FleetTrack.Infrastructure/FleetTrack.Infr
 
 ---
 
-## 🧪 Tests (à venir)
+## 🧪 Tests
 
-- Tests unitaires avec **xUnit**
-- Tests d'intégration avec **WebApplicationFactory**
-- Couverture de code avec **Coverlet**
+FleetTrack dispose d'une suite de tests complète avec **82 tests** (100% de réussite) et une excellente couverture de code.
+
+### Tests Unitaires (60 tests) ✅
+
+**Framework:** xUnit 2.5.3, Moq 4.20.72, FluentAssertions 8.8.0
+
+- ✅ **VehicleServiceTests** (20 tests)
+  - GetAllAsync, GetByIdAsync, GetAvailableAsync
+  - CreateAsync avec validation métier
+  - UpdateAsync, DeleteAsync (soft delete)
+
+- ✅ **DriverServiceTests** (18 tests)
+  - GetAllAsync avec filtres
+  - GetAvailableAsync
+  - Validation du numéro de permis
+
+- ✅ **MissionServiceTests** (22 tests)
+  - Validation complexe de création
+  - Vérification disponibilité véhicule/conducteur
+  - Contrôle d'expiration du permis
+
+### Tests d'Intégration (22 tests) ✅
+
+**Framework:** Microsoft.AspNetCore.Mvc.Testing, EF Core InMemory
+
+- ✅ **VehiclesControllerTests** (12 tests)
+  - GET /api/vehicles
+  - POST /api/vehicles
+  - PUT /api/vehicles/{id}
+  - DELETE /api/vehicles/{id}
+
+- ✅ **DriversControllerTests** (10 tests)
+  - CRUD complet des conducteurs
+  - Validation des endpoints API
+
+### Exécution des Tests
+
+**Tous les tests (82)**
+```bash
+dotnet test
+```
+
+**Tests unitaires uniquement**
+```bash
+dotnet test FleetTrack/tests/FleetTrack.UnitTests/FleetTrack.UnitTests.csproj
+```
+
+**Tests d'intégration uniquement**
+```bash
+dotnet test FleetTrack/tests/FleetTrack.IntegrationTests/FleetTrack.IntegrationTests.csproj
+```
+
+**Avec scripts automatisés**
+```powershell
+# Windows
+.\run-tests.ps1 all          # Tous les tests
+.\run-tests.ps1 unit         # Tests unitaires
+.\run-tests.ps1 integration  # Tests d'intégration
+.\run-tests.ps1 coverage     # Avec rapport de couverture HTML
+.\run-tests.ps1 watch        # Mode watch pour TDD
+```
+
+```bash
+# Linux/Mac
+./run-tests.sh all
+./run-tests.sh coverage
+```
+
+**Résultats attendus:**
+```
+✅ 60 tests unitaires passés
+✅ 22 tests d'intégration passés
+✅ 82 tests au total - 100% de réussite
+⏱️ Temps d'exécution: ~5 secondes
+```
+
+Pour plus de détails, consultez [TESTS_GUIDE.md](TESTS_GUIDE.md).
+
+---
+
+## 🚀 CI/CD Pipeline
+
+FleetTrack utilise **GitHub Actions** pour l'intégration et le déploiement continus.
+
+### Workflow Automatisé
+
+À chaque `push` ou `pull request` sur `main` ou `develop`:
+
+1. ✅ **Setup .NET 8.0** - Configuration de l'environnement
+2. ✅ **Restore dependencies** - Restauration des packages NuGet
+3. ✅ **Build solution** - Compilation en mode Release
+4. ✅ **Run Unit Tests** - Exécution des 60 tests unitaires
+5. ✅ **Run Integration Tests** - Exécution des 22 tests d'intégration
+6. ✅ **Upload Test Results** - Sauvegarde des rapports .trx
+7. ✅ **Publish Test Report** - Publication des résultats
+8. ✅ **Code Coverage Report** - Génération du rapport de couverture
+9. ✅ **Build Docker Image** - Construction de l'image Docker (main uniquement)
+
+### Visualisation
+
+Consultez les résultats en temps réel:
+```
+https://github.com/loicKonan123/FleetTrack/actions
+```
+
+Tous les workflows récents affichent un statut ✅ **Success**.
+
+### Docker
+
+**Image Docker disponible** pour déploiement en production.
+
+**Construire l'image:**
+```bash
+docker build -t fleettrack-api:latest -f FleetTrack/src/FleetTrack.API/Dockerfile ./FleetTrack
+```
+
+**Lancer le conteneur:**
+```bash
+docker run -p 8080:8080 --name fleettrack fleettrack-api:latest
+```
+
+**Accéder à l'API:**
+- API: `http://localhost:8080/api`
+- Health: `http://localhost:8080/health`
 
 ---
 
@@ -260,9 +401,13 @@ dotnet ef database update --project ../FleetTrack.Infrastructure/FleetTrack.Infr
 | Infrastructure Layer | ✅ Complète (Repositories, EF Core) |
 | API Layer | ✅ Complète (Controllers, Middlewares) |
 | Base de données SQLite | ✅ Opérationnelle |
-| Documentation | ✅ Complète (~90 KB) |
-| Tests unitaires | ⏳ À venir |
-| Tests d'intégration | ⏳ À venir |
+| Documentation | ✅ Complète (~100+ KB) |
+| Tests unitaires | ✅ **60 tests - 100% passés** |
+| Tests d'intégration | ✅ **22 tests - 100% passés** |
+| CI/CD Pipeline | ✅ **GitHub Actions opérationnel** |
+| Docker | ✅ **Dockerfile créé et fonctionnel** |
+| Scripts de test | ✅ **PowerShell + Bash** |
+| Couverture de code | ✅ **Rapports automatisés** |
 | SignalR (temps réel) | ⏳ À venir |
 | Background Jobs | ⏳ À venir |
 | Authentification JWT | ⏳ À venir |
