@@ -2,6 +2,7 @@ using FleetTrack.Application.DTOs.Common;
 using FleetTrack.Application.DTOs.Mission;
 using FleetTrack.Application.Interfaces;
 using FleetTrack.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FleetTrack.API.Controllers;
@@ -12,6 +13,7 @@ namespace FleetTrack.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
+[Authorize] // Tous les endpoints nécessitent une authentification
 public class MissionsController : ControllerBase
 {
     private readonly IMissionService _missionService;
@@ -163,6 +165,7 @@ public class MissionsController : ControllerBase
     /// <param name="cancellationToken">Token d'annulation</param>
     /// <returns>Mission créée</returns>
     [HttpPost]
+    [Authorize(Roles = "Admin,Dispatcher")] // Seuls Admin et Dispatcher peuvent créer des missions
     [ProducesResponseType(typeof(ApiResponse<MissionDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<MissionDto>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<MissionDto>>> Create([FromBody] CreateMissionDto dto, CancellationToken cancellationToken = default)
@@ -190,6 +193,7 @@ public class MissionsController : ControllerBase
     /// <param name="cancellationToken">Token d'annulation</param>
     /// <returns>Mission mise à jour</returns>
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Admin,Dispatcher")] // Seuls Admin et Dispatcher peuvent modifier des missions
     [ProducesResponseType(typeof(ApiResponse<MissionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<MissionDto>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<MissionDto>), StatusCodes.Status400BadRequest)]
@@ -215,6 +219,7 @@ public class MissionsController : ControllerBase
     /// <param name="cancellationToken">Token d'annulation</param>
     /// <returns>Mission assignée</returns>
     [HttpPost("{id:guid}/assign")]
+    [Authorize(Roles = "Admin,Dispatcher")] // Seuls Admin et Dispatcher peuvent assigner des missions
     [ProducesResponseType(typeof(ApiResponse<MissionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<MissionDto>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<MissionDto>), StatusCodes.Status400BadRequest)]
@@ -240,6 +245,7 @@ public class MissionsController : ControllerBase
     /// <param name="cancellationToken">Token d'annulation</param>
     /// <returns>Confirmation de suppression</returns>
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")] // Seul Admin peut supprimer des missions
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<object>>> Delete(Guid id, CancellationToken cancellationToken = default)

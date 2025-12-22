@@ -24,7 +24,8 @@ Ce guide complet vous accompagne dans la maîtrise de GitHub, de la configuratio
 
 **FleetTrack** est une API REST complète de gestion de flotte construite avec:
 - **.NET 8.0** et **Clean Architecture**
-- **60 tests unitaires** (100% de réussite)
+- **Authentification JWT** avec 4 rôles (Admin, Dispatcher, Driver, Viewer)
+- **79 tests unitaires** (100% de réussite)
 - **22 tests d'intégration**
 - **Pipeline CI/CD automatisé** avec GitHub Actions
 - **Scripts d'exécution de tests** multi-plateformes
@@ -45,7 +46,7 @@ FleetTrack/
 │   ├── FleetTrack.Infrastructure/  # Accès données, DbContext, repositories
 │   └── FleetTrack.API/             # Contrôleurs REST, endpoints
 ├── tests/
-│   ├── FleetTrack.UnitTests/       # 60 tests unitaires
+│   ├── FleetTrack.UnitTests/       # 79 tests unitaires (AuthService, VehicleService, DriverService, MissionService)
 │   └── FleetTrack.IntegrationTests/ # 22 tests d'intégration
 ├── .github/
 │   └── workflows/
@@ -76,6 +77,14 @@ FleetTrack/
 - ReportGenerator (couverture de code)
 
 ### Fonctionnalités Implémentées
+
+**Authentification et Sécurité:**
+- Authentification JWT avec access et refresh tokens
+- 4 rôles: Admin, Dispatcher, Driver, Viewer
+- Hachage des mots de passe avec BCrypt
+- Rotation automatique des refresh tokens
+- Protection de tous les endpoints avec [Authorize]
+- Compte admin créé automatiquement au démarrage
 
 **Gestion des Véhicules:**
 - CRUD complet (Create, Read, Update, Delete)

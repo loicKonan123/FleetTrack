@@ -2,6 +2,7 @@ using FleetTrack.Application.DTOs.Common;
 using FleetTrack.Application.DTOs.Vehicle;
 using FleetTrack.Application.Interfaces;
 using FleetTrack.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FleetTrack.API.Controllers;
@@ -12,6 +13,7 @@ namespace FleetTrack.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
+[Authorize] // Tous les endpoints nécessitent une authentification
 public class VehiclesController : ControllerBase
 {
     private readonly IVehicleService _vehicleService;
@@ -163,6 +165,7 @@ public class VehiclesController : ControllerBase
     /// <param name="cancellationToken">Token d'annulation</param>
     /// <returns>Véhicule créé</returns>
     [HttpPost]
+    [Authorize(Roles = "Admin,Dispatcher")] // Seuls Admin et Dispatcher peuvent créer des véhicules
     [ProducesResponseType(typeof(ApiResponse<VehicleDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<VehicleDto>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<VehicleDto>>> Create([FromBody] CreateVehicleDto dto, CancellationToken cancellationToken = default)
@@ -190,6 +193,7 @@ public class VehiclesController : ControllerBase
     /// <param name="cancellationToken">Token d'annulation</param>
     /// <returns>Véhicule mis à jour</returns>
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Admin,Dispatcher")] // Seuls Admin et Dispatcher peuvent modifier des véhicules
     [ProducesResponseType(typeof(ApiResponse<VehicleDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<VehicleDto>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<VehicleDto>), StatusCodes.Status400BadRequest)]
@@ -214,6 +218,7 @@ public class VehiclesController : ControllerBase
     /// <param name="cancellationToken">Token d'annulation</param>
     /// <returns>Confirmation de suppression</returns>
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")] // Seul Admin peut supprimer des véhicules
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<object>>> Delete(Guid id, CancellationToken cancellationToken = default)

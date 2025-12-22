@@ -29,6 +29,13 @@ builder.Services.AddSwaggerConfiguration();
 
 var app = builder.Build();
 
+// Initialiser la base de données avec les données de base (rôles, admin)
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<FleetTrack.Infrastructure.Data.FleetTrackDbContext>();
+    await FleetTrack.Infrastructure.Data.DataSeeder.SeedAsync(context);
+}
+
 // Configure the HTTP request pipeline.
 
 // Middleware de gestion des exceptions (doit être en premier)

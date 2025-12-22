@@ -1,6 +1,8 @@
+using FleetTrack.Application.Interfaces;
 using FleetTrack.Application.Interfaces.Repositories;
 using FleetTrack.Infrastructure.Data;
 using FleetTrack.Infrastructure.Repositories;
+using FleetTrack.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -61,6 +63,9 @@ public static class DependencyInjection
         services.AddScoped<IDriverRepository, DriverRepository>();
         services.AddScoped<IMissionRepository, MissionRepository>();
 
+        // Enregistrement des services d'authentification
+        services.AddScoped<IAuthService, AuthService>();
+
         return services;
     }
 
@@ -95,6 +100,9 @@ public static class DependencyInjection
         services.AddScoped<IVehicleRepository, VehicleRepository>();
         services.AddScoped<IDriverRepository, DriverRepository>();
         services.AddScoped<IMissionRepository, MissionRepository>();
+
+        // Enregistrement des services d'authentification
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }

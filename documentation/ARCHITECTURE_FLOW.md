@@ -36,7 +36,7 @@
 ```
 
 ### 📋 Principes clés
-- ✅ **Séparation des responsabilités** - Chaque couche a un rôle précis
+- ✅ **Séparation des responsabilité** - Chaque couche a un rôle précis
 - ✅ **Dépendances unidirectionnelles** - Les dépendances vont vers le Domain
 - ✅ **Inversion de dépendances** - Application définit les interfaces, Infrastructure les implémente
 - ✅ **Testabilité** - Chaque couche peut être testée indépendamment

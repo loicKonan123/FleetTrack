@@ -2,7 +2,7 @@
 
 ![.NET CI/CD](https://github.com/loicKonan123/FleetTrack/actions/workflows/dotnet-ci.yml/badge.svg)
 ![.NET Version](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)
-![Tests](https://img.shields.io/badge/tests-82%20passing-success)
+![Tests](https://img.shields.io/badge/tests-101%20passing-success)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 **Version:** 1.0
@@ -22,6 +22,7 @@ FleetTrack est un système complet de gestion de flotte de véhicules développ�
 
 ### Fonctionnalités principales
 
+✅ **Authentification JWT** avec rôles (Admin, Dispatcher, Driver, Viewer)
 ✅ Gestion complète des **véhicules** (camions, voitures, motos, bus)
 ✅ Gestion des **chauffeurs** avec permis et statuts
 ✅ Planification et suivi des **missions**
@@ -29,7 +30,7 @@ FleetTrack est un système complet de gestion de flotte de véhicules développ�
 ✅ Système d'**alertes** (vitesse, carburant, maintenance)
 ✅ Gestion de la **maintenance** (préventive et corrective)
 ✅ **Geofencing** avec zones géographiques
-✅ API REST complète avec **Swagger**
+✅ API REST complète avec **Swagger** et authentification Bearer
 ✅ Base de données **SQLite** (développement) / **SQL Server** (production)
 
 ---
@@ -47,6 +48,7 @@ FleetTrack est un système complet de gestion de flotte de véhicules développ�
 | Document | Description | Taille |
 |----------|-------------|--------|
 | **[INDEX.md](documentation/INDEX.md)** | Index principal - Point d'entrée de la documentation | 7 KB |
+| **[AUTH_DOCUMENTATION.md](documentation/AUTH_DOCUMENTATION.md)** | Documentation complète de l'authentification JWT et de la sécurité | 28 KB |
 | **[DATABASE_SCHEMA.md](documentation/DATABASE_SCHEMA.md)** | Schéma complet de la base de données avec ERD, tables, relations, types | 37 KB |
 | **[ARCHITECTURE_FLOW.md](documentation/ARCHITECTURE_FLOW.md)** | Parcours du code à travers les couches (Controller → Service → Repository) | 26 KB |
 | **[README.md](documentation/README.md)** | Vue d'ensemble du projet et guide de démarrage | 6 KB |
@@ -82,6 +84,15 @@ dotnet run
 
 L'API sera accessible sur **http://localhost:5115**
 Swagger UI : **http://localhost:5115/swagger**
+
+### Compte administrateur par défaut
+
+Un compte admin est créé automatiquement au premier démarrage:
+- **Username:** `admin`
+- **Password:** `Admin123!`
+- **Rôle:** Admin (accès complet)
+
+⚠️ **Important:** Changez le mot de passe en production !
 
 ### Insérer des données d'exemple
 
@@ -152,6 +163,8 @@ backend_c#/
 
 ### Tables principales
 
+- **Users** : Gestion des utilisateurs et authentification (13 colonnes)
+- **Roles** : Rôles et permissions (Admin, Dispatcher, Driver, Viewer)
 - **Vehicles** : Gestion des véhicules (16 colonnes)
 - **Drivers** : Gestion des chauffeurs (12 colonnes)
 - **Missions** : Missions et trajets (14 colonnes)
@@ -188,6 +201,8 @@ backend_c#/
 - **SQLite / SQL Server** - Bases de données
 - **AutoMapper** - Mapping Entity ↔ DTO
 - **FluentValidation** - Validation des DTOs
+- **JWT Bearer Authentication** - Authentification sécurisée
+- **BCrypt.Net** - Hachage des mots de passe
 
 ### Patterns & Architecture
 - **Clean Architecture** - Séparation des responsabilités
@@ -203,7 +218,47 @@ backend_c#/
 
 ---
 
+## 🔐 Authentification et Sécurité
+
+FleetTrack utilise **JWT (JSON Web Tokens)** pour sécuriser tous les endpoints de l'API.
+
+### Endpoints d'authentification
+
+- `POST /api/auth/login` - Connexion (retourne access token + refresh token)
+- `POST /api/auth/register` - Inscription d'un nouvel utilisateur
+- `POST /api/auth/refresh` - Rafraîchir le token (rotation automatique)
+- `POST /api/auth/revoke/{username}` - Révoquer le token d'un utilisateur (Admin)
+- `GET /api/auth/me` - Obtenir les informations de l'utilisateur connecté
+- `GET /api/auth/{id}` - Obtenir un utilisateur par ID (Admin)
+
+### Rôles et Permissions
+
+| Rôle | Permissions |
+|------|-------------|
+| **Admin** | Accès complet à tous les endpoints (CRUD sur toutes les entités) |
+| **Dispatcher** | Gestion des véhicules, missions, conducteurs (lecture + création + modification) |
+| **Driver** | Lecture des missions assignées, mise à jour des positions GPS |
+| **Viewer** | Lecture seule sur toutes les entités |
+
+### Utilisation dans Swagger
+
+1. Cliquez sur le bouton **"Authorize"** 🔓 en haut de Swagger
+2. Connectez-vous d'abord via `/api/auth/login` pour obtenir un token
+3. Copiez le token (sans "Bearer")
+4. Collez-le dans le champ "Value" et cliquez **Authorize**
+5. Tous vos requêtes incluront maintenant le token
+
+**Documentation complète:** [documentation/AUTH_DOCUMENTATION.md](documentation/AUTH_DOCUMENTATION.md)
+
+---
+
 ## 📡 Endpoints API principaux
+
+### Authentication
+- `POST /api/auth/login` - Connexion (retourne JWT tokens)
+- `POST /api/auth/register` - Inscription
+- `POST /api/auth/refresh` - Rafraîchir le token
+- `GET /api/auth/me` - Profil utilisateur
 
 ### Vehicles
 - `GET /api/vehicles` - Liste paginée
@@ -264,11 +319,17 @@ dotnet ef database update --project ../FleetTrack.Infrastructure/FleetTrack.Infr
 
 ## 🧪 Tests
 
-FleetTrack dispose d'une suite de tests complète avec **82 tests** (100% de réussite) et une excellente couverture de code.
+FleetTrack dispose d'une suite de tests complète avec **101 tests** (100% de réussite) et une excellente couverture de code.
 
-### Tests Unitaires (60 tests) ✅
+### Tests Unitaires (79 tests) ✅
 
 **Framework:** xUnit 2.5.3, Moq 4.20.72, FluentAssertions 8.8.0
+
+- ✅ **AuthServiceTests** (19 tests)
+  - Login avec validation des credentials
+  - Register avec validation unicité username/email
+  - RefreshToken avec rotation automatique
+  - RevokeToken, GetUserById, GetUserByUsername
 
 - ✅ **VehicleServiceTests** (20 tests)
   - GetAllAsync, GetByIdAsync, GetAvailableAsync
@@ -334,10 +395,10 @@ dotnet test FleetTrack/tests/FleetTrack.IntegrationTests/FleetTrack.IntegrationT
 
 **Résultats attendus:**
 ```
-✅ 60 tests unitaires passés
+✅ 79 tests unitaires passés (AuthService: 19, VehicleService: 20, DriverService: 18, MissionService: 22)
 ✅ 22 tests d'intégration passés
-✅ 82 tests au total - 100% de réussite
-⏱️ Temps d'exécution: ~5 secondes
+✅ 101 tests au total - 100% de réussite
+⏱️ Temps d'exécution: ~6 secondes
 ```
 
 Pour plus de détails, consultez [TESTS_GUIDE.md](TESTS_GUIDE.md).
@@ -355,7 +416,7 @@ FleetTrack utilise **GitHub Actions** pour l'intégration et le déploiement con
 1. ✅ **Setup .NET 8.0** - Configuration de l'environnement
 2. ✅ **Restore dependencies** - Restauration des packages NuGet
 3. ✅ **Build solution** - Compilation en mode Release
-4. ✅ **Run Unit Tests** - Exécution des 60 tests unitaires
+4. ✅ **Run Unit Tests** - Exécution des 79 tests unitaires (incluant AuthService)
 5. ✅ **Run Integration Tests** - Exécution des 22 tests d'intégration
 6. ✅ **Upload Test Results** - Sauvegarde des rapports .trx
 7. ✅ **Publish Test Report** - Publication des résultats
@@ -396,13 +457,14 @@ docker run -p 8080:8080 --name fleettrack fleettrack-api:latest
 | Fonctionnalité | Statut |
 |----------------|--------|
 | Architecture Clean | ✅ Complète |
-| Domain Layer | ✅ Complète (9 entités) |
+| Domain Layer | ✅ Complète (11 entités: +Users, +Roles) |
 | Application Layer | ✅ Complète (Services, DTOs, Validators) |
-| Infrastructure Layer | ✅ Complète (Repositories, EF Core) |
-| API Layer | ✅ Complète (Controllers, Middlewares) |
+| Infrastructure Layer | ✅ Complète (Repositories, EF Core, AuthService) |
+| API Layer | ✅ Complète (Controllers, Middlewares, JWT) |
 | Base de données SQLite | ✅ Opérationnelle |
-| Documentation | ✅ Complète (~100+ KB) |
-| Tests unitaires | ✅ **60 tests - 100% passés** |
+| **Authentification JWT** | ✅ **Complète (Login, Register, Refresh, Roles)** |
+| Documentation | ✅ Complète (~130+ KB avec AUTH_DOCUMENTATION.md) |
+| Tests unitaires | ✅ **79 tests - 100% passés** |
 | Tests d'intégration | ✅ **22 tests - 100% passés** |
 | CI/CD Pipeline | ✅ **GitHub Actions opérationnel** |
 | Docker | ✅ **Dockerfile créé et fonctionnel** |
@@ -410,7 +472,6 @@ docker run -p 8080:8080 --name fleettrack fleettrack-api:latest
 | Couverture de code | ✅ **Rapports automatisés** |
 | SignalR (temps réel) | ⏳ À venir |
 | Background Jobs | ⏳ À venir |
-| Authentification JWT | ⏳ À venir |
 
 ---
 

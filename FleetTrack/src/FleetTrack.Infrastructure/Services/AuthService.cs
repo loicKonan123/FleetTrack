@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace FleetTrack.Application.Services;
+namespace FleetTrack.Infrastructure.Services;
 
 public class AuthService : IAuthService
 {
@@ -90,8 +90,8 @@ public class AuthService : IAuthService
             PhoneNumber = registerDto.PhoneNumber,
             RoleId = role.Id,
             IsActive = true,
-            CreatedDate = DateTime.UtcNow,
-            ModifiedDate = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
 
         _context.Users.Add(user);
