@@ -66,6 +66,9 @@ public static class DependencyInjection
         // Enregistrement des services d'authentification
         services.AddScoped<IAuthService, AuthService>();
 
+        // Enregistrement du service de tracking GPS
+        services.AddScoped<IGpsTrackingService, GpsTrackingService>();
+
         return services;
     }
 
@@ -103,6 +106,9 @@ public static class DependencyInjection
 
         // Enregistrement des services d'authentification
         services.AddScoped<IAuthService, AuthService>();
+
+        // Enregistrement du service de tracking GPS
+        services.AddScoped<IGpsTrackingService, GpsTrackingService>();
 
         return services;
     }

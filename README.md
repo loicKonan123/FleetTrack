@@ -23,10 +23,11 @@ FleetTrack est un système complet de gestion de flotte de véhicules développ�
 ### Fonctionnalités principales
 
 ✅ **Authentification JWT** avec rôles (Admin, Dispatcher, Driver, Viewer)
+✅ **SignalR GPS Tracking** en temps réel avec WebSockets
 ✅ Gestion complète des **véhicules** (camions, voitures, motos, bus)
 ✅ Gestion des **chauffeurs** avec permis et statuts
 ✅ Planification et suivi des **missions**
-✅ **Tracking GPS** en temps réel
+✅ **Tracking GPS** avec historique et positions temps réel
 ✅ Système d'**alertes** (vitesse, carburant, maintenance)
 ✅ Gestion de la **maintenance** (préventive et corrective)
 ✅ **Geofencing** avec zones géographiques
@@ -49,6 +50,7 @@ FleetTrack est un système complet de gestion de flotte de véhicules développ�
 |----------|-------------|--------|
 | **[INDEX.md](documentation/INDEX.md)** | Index principal - Point d'entrée de la documentation | 7 KB |
 | **[AUTH_DOCUMENTATION.md](documentation/AUTH_DOCUMENTATION.md)** | Documentation complète de l'authentification JWT et de la sécurité | 28 KB |
+| **[SIGNALR_DOCUMENTATION.md](documentation/SIGNALR_DOCUMENTATION.md)** | Documentation complète du tracking GPS temps réel avec SignalR | 28 KB |
 | **[DATABASE_SCHEMA.md](documentation/DATABASE_SCHEMA.md)** | Schéma complet de la base de données avec ERD, tables, relations, types | 37 KB |
 | **[ARCHITECTURE_FLOW.md](documentation/ARCHITECTURE_FLOW.md)** | Parcours du code à travers les couches (Controller → Service → Repository) | 26 KB |
 | **[README.md](documentation/README.md)** | Vue d'ensemble du projet et guide de démarrage | 6 KB |
@@ -199,6 +201,7 @@ backend_c#/
 - **ASP.NET Core 8.0** - Framework Web API
 - **Entity Framework Core 8.0** - ORM
 - **SQLite / SQL Server** - Bases de données
+- **SignalR** - Communication temps réel (WebSockets)
 - **AutoMapper** - Mapping Entity ↔ DTO
 - **FluentValidation** - Validation des DTOs
 - **JWT Bearer Authentication** - Authentification sécurisée
@@ -249,6 +252,65 @@ FleetTrack utilise **JWT (JSON Web Tokens)** pour sécuriser tous les endpoints 
 5. Tous vos requêtes incluront maintenant le token
 
 **Documentation complète:** [documentation/AUTH_DOCUMENTATION.md](documentation/AUTH_DOCUMENTATION.md)
+
+---
+
+## 📡 Tracking GPS Temps Réel (SignalR)
+
+FleetTrack utilise **SignalR** pour le tracking GPS en temps réel via **WebSockets**.
+
+### Hub SignalR
+
+**Endpoint:** `ws://localhost:5115/hubs/gps`
+
+Le hub permet aux clients de :
+- ✅ S'abonner au tracking d'un véhicule spécifique
+- ✅ S'abonner à tous les véhicules
+- ✅ Recevoir les positions GPS en temps réel
+- ✅ Recevoir des événements (véhicule démarré, arrêté, alerte, etc.)
+
+### Connexion avec JWT
+
+```javascript
+import * as signalR from "@microsoft/signalr";
+
+const connection = new signalR.HubConnectionBuilder()
+  .withUrl("http://localhost:5115/hubs/gps", {
+    accessTokenFactory: () => yourJwtToken
+  })
+  .withAutomaticReconnect()
+  .build();
+
+// S'abonner à un véhicule
+await connection.invoke("SubscribeToVehicle", vehicleId);
+
+// Recevoir les positions
+connection.on("ReceiveGpsPosition", (position) => {
+  console.log(`Véhicule ${position.vehicleId}:`, position.latitude, position.longitude);
+  // Mettre à jour la carte en temps réel
+});
+
+await connection.start();
+```
+
+### Méthodes du Hub
+
+| Méthode | Rôle requis | Description |
+|---------|-------------|-------------|
+| `SubscribeToVehicle(Guid vehicleId)` | Authentifié | S'abonner aux positions d'un véhicule |
+| `UnsubscribeFromVehicle(Guid vehicleId)` | Authentifié | Se désabonner |
+| `SubscribeToAllVehicles()` | Authentifié | S'abonner à tous les véhicules |
+| `SendGpsPosition(GpsPositionUpdateDto)` | Admin/Dispatcher/Driver | Envoyer une position GPS |
+| `SendTrackingEvent(TrackingEventDto)` | Admin/Dispatcher | Envoyer un événement de tracking |
+
+### Événements Clients
+
+- `ReceiveGpsPosition` - Nouvelle position GPS
+- `ReceiveTrackingEvent` - Événement (VehicleMoving, VehicleStopped, SpeedLimitExceeded, etc.)
+- `SubscriptionConfirmed` - Confirmation d'abonnement
+- `SubscribedToAllVehicles` - Abonnement global confirmé
+
+**Documentation complète:** [documentation/SIGNALR_DOCUMENTATION.md](documentation/SIGNALR_DOCUMENTATION.md)
 
 ---
 
@@ -459,19 +521,20 @@ docker run -p 8080:8080 --name fleettrack fleettrack-api:latest
 | Architecture Clean | ✅ Complète |
 | Domain Layer | ✅ Complète (11 entités: +Users, +Roles) |
 | Application Layer | ✅ Complète (Services, DTOs, Validators) |
-| Infrastructure Layer | ✅ Complète (Repositories, EF Core, AuthService) |
-| API Layer | ✅ Complète (Controllers, Middlewares, JWT) |
+| Infrastructure Layer | ✅ Complète (Repositories, EF Core, AuthService, GpsTrackingService) |
+| API Layer | ✅ Complète (Controllers, Middlewares, JWT, SignalR Hub) |
 | Base de données SQLite | ✅ Opérationnelle |
 | **Authentification JWT** | ✅ **Complète (Login, Register, Refresh, Roles)** |
-| Documentation | ✅ Complète (~130+ KB avec AUTH_DOCUMENTATION.md) |
+| **SignalR GPS Tracking** | ✅ **Complète (Hub, DTOs, Service, WebSockets temps réel)** |
+| Documentation | ✅ Complète (~158+ KB avec AUTH + SIGNALR) |
 | Tests unitaires | ✅ **79 tests - 100% passés** |
 | Tests d'intégration | ✅ **22 tests - 100% passés** |
 | CI/CD Pipeline | ✅ **GitHub Actions opérationnel** |
 | Docker | ✅ **Dockerfile créé et fonctionnel** |
 | Scripts de test | ✅ **PowerShell + Bash** |
 | Couverture de code | ✅ **Rapports automatisés** |
-| SignalR (temps réel) | ⏳ À venir |
 | Background Jobs | ⏳ À venir |
+| Notifications Push | ⏳ À venir |
 
 ---
 

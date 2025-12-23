@@ -21,6 +21,14 @@ builder.Services.AddControllers()
 // JWT Authentication
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
+// SignalR pour le tracking GPS en temps réel
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+});
+
 // CORS
 builder.Services.AddCorsConfiguration();
 
@@ -68,7 +76,11 @@ else
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Mapper les controllers API
 app.MapControllers();
+
+// Mapper le hub SignalR pour le tracking GPS
+app.MapHub<FleetTrack.API.Hubs.GpsHub>("/hubs/gps");
 
 app.Run();
 
