@@ -1,0 +1,36 @@
+services:
+  # API FleetTrack
+  api:
+    build:
+      context: ./FleetTrack
+      dockerfile: src/FleetTrack.API/Dockerfile
+    container_name: fleettrack-api
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      # Configuration de la base de données (SQLite embarqué)
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/FleetTrack.db
+    volumes:
+      # Persister la base de données SQLite
+      - fleettrack-data:/app/data
+    networks:
+      - fleettrack-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+# Volumes pour persister les données
+volumes:
+  fleettrack-data:
+    driver: local
+
+# Réseau pour la communication entre services
+networks:
+  fleettrack-network:
+    driver: bridge

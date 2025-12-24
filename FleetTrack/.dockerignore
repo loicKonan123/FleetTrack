@@ -1,0 +1,51 @@
+# Ignorer les fichiers inutiles pour le build Docker
+
+# Binaires et objets compilés
+**/bin/
+**/obj/
+**/out/
+
+# Fichiers de base de données
+**/*.db
+**/*.db-shm
+**/*.db-wal
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Tests
+**/TestResults/
+**/*.trx
+
+# NuGet
+*.nupkg
+**/packages/
+
+# Documentation
+**/documentation/
+**/*.md
+!README.md
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+**/logs/
+**/*.log
+
+# Temporaires
+**/tmp/
+**/temp/

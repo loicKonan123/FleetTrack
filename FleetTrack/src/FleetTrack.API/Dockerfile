@@ -34,8 +34,9 @@ RUN addgroup --system --gid 1001 fleettrack && \
 # Copy published files
 COPY --from=publish /app/publish .
 
-# Change ownership
-RUN chown -R fleettrack:fleettrack /app
+# Create data directory for SQLite database
+RUN mkdir -p /app/data && \
+    chown -R fleettrack:fleettrack /app
 
 # Switch to non-root user
 USER fleettrack

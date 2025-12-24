@@ -22,9 +22,10 @@ public static class ServiceExtensions
             options.AddPolicy("AllowAll", builder =>
             {
                 builder
-                    .AllowAnyOrigin()
+                    .SetIsOriginAllowed(_ => true) // Permet toutes les origines (fichiers locaux inclus)
                     .AllowAnyMethod()
-                    .AllowAnyHeader();
+                    .AllowAnyHeader()
+                    .AllowCredentials(); // Nécessaire pour SignalR avec JWT
             });
 
             options.AddPolicy("Development", builder =>
@@ -81,7 +82,11 @@ public static class ServiceExtensions
                 ValidateAudience = true,
                 ValidAudience = jwtAudience,
                 ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero // Pas de délai de grâce
+                ClockSkew = TimeSpan.Zero, // Pas de délai de grâce
+
+                // Mapping des claims pour User.Identity.Name et User.IsInRole()
+                NameClaimType = System.Security.Claims.ClaimTypes.Name,
+                RoleClaimType = System.Security.Claims.ClaimTypes.Role
             };
         });
 
@@ -161,14 +166,7 @@ public static class ServiceExtensions
     public static IApplicationBuilder UseSwaggerConfiguration(this IApplicationBuilder app)
     {
         app.UseSwagger();
-        app.UseSwaggerUI(options =>
-        {
-            options.SwaggerEndpoint("/swagger/v1/swagger.json", "FleetTrack API v1");
-            options.RoutePrefix = string.Empty; // Swagger UI à la racine
-            options.DocumentTitle = "FleetTrack API Documentation";
-            options.EnableDeepLinking();
-            options.DisplayRequestDuration();
-        });
+        app.UseSwaggerUI();
 
         return app;
     }
