@@ -22,8 +22,9 @@ export const useVehicles = (page = 1, pageSize = 10) => {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateVehicleRequest }) =>
       vehiclesApi.update(id, data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['vehicles'] });
+      queryClient.invalidateQueries({ queryKey: ['vehicle', variables.id] });
     },
   });
 

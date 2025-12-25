@@ -32,11 +32,13 @@ const statusLabels: Record<VehicleStatus, string> = {
 };
 
 const typeLabels: Record<VehicleType, string> = {
-  [VehicleType.Truck]: 'Truck',
-  [VehicleType.Van]: 'Van',
-  [VehicleType.Car]: 'Car',
-  [VehicleType.Motorcycle]: 'Motorcycle',
+  [VehicleType.Car]: 'Voiture',
+  [VehicleType.Truck]: 'Camion',
+  [VehicleType.Van]: 'Camionnette',
+  [VehicleType.Motorcycle]: 'Moto',
   [VehicleType.Bus]: 'Bus',
+  [VehicleType.Trailer]: 'Remorque',
+  [VehicleType.Other]: 'Autre',
 };
 
 export default function VehiclesPage() {
@@ -72,7 +74,7 @@ export default function VehiclesPage() {
           <CardTitle>All Vehicles ({vehicles?.totalCount || 0})</CardTitle>
         </CardHeader>
         <CardContent>
-          {vehicles?.data && vehicles.data.length > 0 ? (
+          {vehicles?.items && vehicles.items.length > 0 ? (
             <>
               <Table>
                 <TableHeader>
@@ -88,7 +90,7 @@ export default function VehiclesPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {vehicles.data.map((vehicle) => (
+                  {vehicles.items.map((vehicle) => (
                     <TableRow key={vehicle.id}>
                       <TableCell className="font-medium">
                         {vehicle.registrationNumber}
@@ -102,10 +104,10 @@ export default function VehiclesPage() {
                           {statusLabels[vehicle.status]}
                         </Badge>
                       </TableCell>
-                      <TableCell>{vehicle.currentMileage.toLocaleString()} km</TableCell>
+                      <TableCell>{vehicle.currentMileage?.toLocaleString() ?? 0} km</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          <Link href={`/vehicles/${vehicle.id}/edit`}>
+                          <Link href={`/vehicles/${vehicle.id}`}>
                             <Button variant="ghost" size="sm">
                               <Edit className="h-4 w-4" />
                             </Button>

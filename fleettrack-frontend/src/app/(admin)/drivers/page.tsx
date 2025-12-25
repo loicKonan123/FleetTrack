@@ -36,10 +36,10 @@ export default function DriversPage() {
   };
 
   // Filtrage côté client
-  const filteredDrivers = drivers?.data.filter((driver) =>
-    driver.user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    driver.user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    driver.licenseNumber.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredDrivers = drivers?.items?.filter((driver) =>
+    driver.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    driver.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    driver.licenseNumber?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (isLoading) return <div className="text-center py-8">Chargement...</div>;
@@ -90,17 +90,19 @@ export default function DriversPage() {
                   {filteredDrivers.map((driver) => (
                     <TableRow key={driver.id}>
                       <TableCell className="font-medium">
-                        {driver.user.firstName} {driver.user.lastName}
+                        {driver.firstName} {driver.lastName}
                       </TableCell>
-                      <TableCell>{driver.user.email}</TableCell>
+                      <TableCell>{driver.email}</TableCell>
                       <TableCell>{driver.phoneNumber}</TableCell>
                       <TableCell>{driver.licenseNumber}</TableCell>
                       <TableCell>
-                        {format(new Date(driver.licenseExpiryDate), 'dd/MM/yyyy')}
+                        {driver.licenseExpiryDate
+                          ? format(new Date(driver.licenseExpiryDate), 'dd/MM/yyyy')
+                          : 'N/A'}
                       </TableCell>
                       <TableCell>
-                        <Badge className={driver.isAvailable ? 'bg-green-500' : 'bg-red-500'}>
-                          {driver.isAvailable ? 'Disponible' : 'Indisponible'}
+                        <Badge className={driver.status === 0 ? 'bg-green-500' : 'bg-red-500'}>
+                          {driver.status === 0 ? 'Disponible' : 'Indisponible'}
                         </Badge>
                       </TableCell>
                       <TableCell>

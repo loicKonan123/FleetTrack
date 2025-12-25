@@ -46,9 +46,9 @@ public class MissionServiceTests
         };
         var missionDtos = missions.Select(m => new MissionDto { Id = m.Id, Name = m.Name }).ToList();
 
-        _mockMissionRepository.Setup(r => r.GetPagedAsync(1, 10, It.IsAny<CancellationToken>()))
+        _mockMissionRepository.Setup(r => r.GetPagedWithFiltersAsync(1, 10, null, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(missions);
-        _mockMissionRepository.Setup(r => r.CountAsync(It.IsAny<CancellationToken>()))
+        _mockMissionRepository.Setup(r => r.CountWithFiltersAsync(null, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(2);
         _mockMapper.Setup(m => m.Map<IEnumerable<MissionDto>>(missions))
             .Returns(missionDtos);

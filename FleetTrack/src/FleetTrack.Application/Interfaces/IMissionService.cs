@@ -6,7 +6,7 @@ namespace FleetTrack.Application.Interfaces;
 
 public interface IMissionService
 {
-    Task<PagedResult<MissionDto>> GetAllAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+    Task<PagedResult<MissionDto>> GetAllAsync(int pageNumber, int pageSize, MissionStatus? status = null, MissionPriority? priority = null, CancellationToken cancellationToken = default);
     Task<MissionDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<MissionDetailsDto?> GetDetailsAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IEnumerable<MissionDto>> GetActiveAsync(CancellationToken cancellationToken = default);

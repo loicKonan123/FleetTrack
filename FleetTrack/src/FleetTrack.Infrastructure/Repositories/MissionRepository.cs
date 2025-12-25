@@ -15,9 +15,69 @@ public class MissionRepository : Repository<Mission>, IMissionRepository
     {
     }
 
+    public override async Task<Mission?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(m => m.Vehicle)
+            .Include(m => m.Driver)
+            .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
+    }
+
+    public override async Task<IEnumerable<Mission>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(m => m.Vehicle)
+            .Include(m => m.Driver)
+            .OrderByDescending(m => m.StartDate)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
         return await base.CountAsync(null, cancellationToken);
+    }
+
+    public async Task<IEnumerable<Mission>> GetPagedWithFiltersAsync(int pageNumber, int pageSize, MissionStatus? status = null, MissionPriority? priority = null, CancellationToken cancellationToken = default)
+    {
+        var query = _dbSet
+            .Include(m => m.Vehicle)
+            .Include(m => m.Driver)
+            .AsQueryable();
+
+        if (status.HasValue)
+        {
+            query = query.Where(m => m.Status == status.Value);
+        }
+
+        if (priority.HasValue)
+        {
+            query = query.Where(m => m.Priority == priority.Value);
+        }
+
+        return await query
+            .OrderByDescending(m => m.StartDate)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> CountWithFiltersAsync(MissionStatus? status = null, MissionPriority? priority = null, CancellationToken cancellationToken = default)
+    {
+        var query = _dbSet.AsQueryable();
+
+        if (status.HasValue)
+        {
+            query = query.Where(m => m.Status == status.Value);
+        }
+
+        if (priority.HasValue)
+        {
+            query = query.Where(m => m.Priority == priority.Value);
+        }
+
+        return await query.CountAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<Mission>> GetMissionsByStatusAsync(MissionStatus status, CancellationToken cancellationToken = default)

@@ -9,14 +9,16 @@ interface MissionStatusChartProps {
 }
 
 const STATUS_LABELS = {
-  [MissionStatus.Pending]: 'En attente',
+  [MissionStatus.Planned]: 'Planifiee',
+  [MissionStatus.Assigned]: 'Assignee',
   [MissionStatus.InProgress]: 'En cours',
-  [MissionStatus.Completed]: 'Terminées',
-  [MissionStatus.Cancelled]: 'Annulées',
+  [MissionStatus.Completed]: 'Terminee',
+  [MissionStatus.Cancelled]: 'Annulee',
 };
 
 const STATUS_COLORS = {
-  [MissionStatus.Pending]: '#eab308', // yellow
+  [MissionStatus.Planned]: '#6b7280', // gray
+  [MissionStatus.Assigned]: '#eab308', // yellow
   [MissionStatus.InProgress]: '#3b82f6', // blue
   [MissionStatus.Completed]: '#22c55e', // green
   [MissionStatus.Cancelled]: '#ef4444', // red

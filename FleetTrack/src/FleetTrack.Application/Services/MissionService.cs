@@ -28,10 +28,10 @@ public class MissionService : IMissionService
         _mapper = mapper;
     }
 
-    public async Task<PagedResult<MissionDto>> GetAllAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<MissionDto>> GetAllAsync(int pageNumber, int pageSize, MissionStatus? status = null, MissionPriority? priority = null, CancellationToken cancellationToken = default)
     {
-        var missions = await _missionRepository.GetPagedAsync(pageNumber, pageSize, cancellationToken);
-        var totalCount = await _missionRepository.CountAsync(cancellationToken: cancellationToken);
+        var missions = await _missionRepository.GetPagedWithFiltersAsync(pageNumber, pageSize, status, priority, cancellationToken);
+        var totalCount = await _missionRepository.CountWithFiltersAsync(status, priority, cancellationToken);
 
         return new PagedResult<MissionDto>
         {

@@ -1,9 +1,11 @@
 export enum VehicleType {
-  Truck = 0,
-  Van = 1,
-  Car = 2,
+  Car = 0,
+  Truck = 1,
+  Van = 2,
   Motorcycle = 3,
-  Bus = 4
+  Bus = 4,
+  Trailer = 5,
+  Other = 6
 }
 
 export enum VehicleStatus {
@@ -43,10 +45,11 @@ export interface CreateVehicleRequest {
   currentMileage: number;
 }
 
-export interface UpdateVehicleRequest extends CreateVehicleRequest {
+export interface UpdateVehicleRequest {
+  brand: string;
+  model: string;
   status: VehicleStatus;
-  lastMaintenanceDate?: string;
-  lastMaintenanceMileage?: number;
+  currentFuelLevel: number;
+  mileage: number;
   nextMaintenanceDate?: string;
-  nextMaintenanceMileage?: number;
 }

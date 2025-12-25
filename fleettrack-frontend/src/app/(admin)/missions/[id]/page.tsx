@@ -12,16 +12,24 @@ import { useMission, useMissions } from '@/lib/hooks/useMissions';
 import { useVehicles } from '@/lib/hooks/useVehicles';
 import { MissionPriority, MissionStatus } from '@/types/mission';
 import { format } from 'date-fns';
-import { ArrowLeft, Calendar, Clock, MapPin, Save, Truck, User } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Save, Truck, User } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 
 const statusColors: Record<MissionStatus, string> = {
-  [MissionStatus.Pending]: 'bg-yellow-500',
+  [MissionStatus.Planned]: 'bg-gray-500',
+  [MissionStatus.Assigned]: 'bg-yellow-500',
   [MissionStatus.InProgress]: 'bg-blue-500',
   [MissionStatus.Completed]: 'bg-green-500',
   [MissionStatus.Cancelled]: 'bg-red-500',
+};
+
+const statusLabels: Record<MissionStatus, string> = {
+  [MissionStatus.Planned]: 'Planifiee',
+  [MissionStatus.Assigned]: 'Assignee',
+  [MissionStatus.InProgress]: 'En cours',
+  [MissionStatus.Completed]: 'Terminee',
+  [MissionStatus.Cancelled]: 'Annulee',
 };
 
 const priorityColors: Record<MissionPriority, string> = {
@@ -31,9 +39,16 @@ const priorityColors: Record<MissionPriority, string> = {
   [MissionPriority.Urgent]: 'bg-red-500',
 };
 
-export default function MissionDetailsPage({ params }: { params: { id: string } }) {
-  const router = useRouter();
-  const { data: mission, isLoading } = useMission(params.id);
+const priorityLabels: Record<MissionPriority, string> = {
+  [MissionPriority.Low]: 'Faible',
+  [MissionPriority.Medium]: 'Moyenne',
+  [MissionPriority.High]: 'Haute',
+  [MissionPriority.Urgent]: 'Urgente',
+};
+
+export default function MissionDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const { data: mission, isLoading } = useMission(id);
   const { updateMission, updateMissionStatus } = useMissions();
   const { vehicles } = useVehicles(1, 100);
   const { drivers } = useDrivers(1, 100);
@@ -43,29 +58,27 @@ export default function MissionDetailsPage({ params }: { params: { id: string } 
   const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
+    name: '',
+    description: '',
     vehicleId: '',
     driverId: '',
     priority: MissionPriority.Medium,
-    startLocation: '',
-    endLocation: '',
-    scheduledStartTime: '',
-    scheduledEndTime: '',
+    startDate: '',
+    endDate: '',
     estimatedDistance: 0,
-    notes: '',
   });
 
   useEffect(() => {
     if (mission) {
       setFormData({
+        name: mission.name,
+        description: mission.description,
         vehicleId: mission.vehicleId,
         driverId: mission.driverId,
         priority: mission.priority,
-        startLocation: mission.startLocation,
-        endLocation: mission.endLocation,
-        scheduledStartTime: mission.scheduledStartTime.slice(0, 16),
-        scheduledEndTime: mission.scheduledEndTime.slice(0, 16),
+        startDate: mission.startDate?.slice(0, 16) || '',
+        endDate: mission.endDate?.slice(0, 16) || '',
         estimatedDistance: mission.estimatedDistance,
-        notes: mission.notes || '',
       });
     }
   }, [mission]);
@@ -77,34 +90,35 @@ export default function MissionDetailsPage({ params }: { params: { id: string } 
 
     try {
       await updateMission({
-        id: params.id,
+        id,
         data: {
+          name: formData.name,
+          description: formData.description,
           vehicleId: formData.vehicleId,
           driverId: formData.driverId,
           priority: formData.priority,
-          startLocation: formData.startLocation,
-          endLocation: formData.endLocation,
-          scheduledStartTime: formData.scheduledStartTime,
-          scheduledEndTime: formData.scheduledEndTime,
+          startDate: formData.startDate,
+          endDate: formData.endDate || undefined,
           estimatedDistance: formData.estimatedDistance,
-          notes: formData.notes || undefined,
         },
       });
 
       setIsEditing(false);
-    } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Erreur lors de la mise à jour');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } }; message?: string };
+      setError(error.response?.data?.message || error.message || 'Erreur lors de la mise a jour');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleStatusChange = async (newStatus: MissionStatus) => {
-    if (confirm(`Êtes-vous sûr de vouloir changer le statut en "${MissionStatus[newStatus]}" ?`)) {
+    if (confirm(`Etes-vous sur de vouloir changer le statut en "${statusLabels[newStatus]}" ?`)) {
       try {
-        await updateMissionStatus({ id: params.id, status: newStatus });
-      } catch (err: any) {
-        setError(err.response?.data?.message || err.message || 'Erreur lors du changement de statut');
+        await updateMissionStatus({ id, status: newStatus });
+      } catch (err: unknown) {
+        const error = err as { response?: { data?: { message?: string } }; message?: string };
+        setError(error.response?.data?.message || error.message || 'Erreur lors du changement de statut');
       }
     }
   };
@@ -114,11 +128,11 @@ export default function MissionDetailsPage({ params }: { params: { id: string } 
   }
 
   if (!mission) {
-    return <div className="text-center py-8">Mission non trouvée</div>;
+    return <div className="text-center py-8">Mission non trouvee</div>;
   }
 
-  const availableVehicles = vehicles?.data.filter((v) => v.status === 0 || v.id === mission.vehicleId) || [];
-  const availableDrivers = drivers?.data.filter((d) => d.isAvailable || d.id === mission.driverId) || [];
+  const availableVehicles = vehicles?.items?.filter((v) => v.status === 0 || v.id === mission.vehicleId) || [];
+  const availableDrivers = drivers?.items?.filter((d) => d.status === 0 || d.id === mission.driverId) || [];
 
   return (
     <div className="space-y-4">
@@ -130,19 +144,17 @@ export default function MissionDetailsPage({ params }: { params: { id: string } 
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold">Détails de la Mission</h1>
-            <p className="text-muted-foreground">
-              {mission.startLocation} → {mission.endLocation}
-            </p>
+            <h1 className="text-3xl font-bold">{mission.name}</h1>
+            <p className="text-muted-foreground">{mission.description}</p>
           </div>
         </div>
 
         <div className="flex gap-2">
           <Badge className={statusColors[mission.status]}>
-            {MissionStatus[mission.status]}
+            {statusLabels[mission.status]}
           </Badge>
           <Badge className={priorityColors[mission.priority]}>
-            {MissionPriority[mission.priority]}
+            {priorityLabels[mission.priority]}
           </Badge>
         </div>
       </div>
@@ -167,15 +179,28 @@ export default function MissionDetailsPage({ params }: { params: { id: string } 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
-                {/* Véhicule */}
+                {/* Nom */}
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Nom de la Mission</Label>
+                  {isEditing ? (
+                    <Input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
+                    />
+                  ) : (
+                    <p className="text-sm">{mission.name}</p>
+                  )}
+                </div>
+
+                {/* Vehicule */}
                 <div className="space-y-2">
-                  <Label>Véhicule</Label>
+                  <Label>Vehicule</Label>
                   {isEditing ? (
                     <Select
                       value={formData.vehicleId}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, vehicleId: value })
-                      }
+                      onValueChange={(value) => setFormData({ ...formData, vehicleId: value })}
                       required
                     >
                       <SelectTrigger>
@@ -190,10 +215,7 @@ export default function MissionDetailsPage({ params }: { params: { id: string } 
                       </SelectContent>
                     </Select>
                   ) : (
-                    <p className="text-sm">
-                      {mission.vehicle?.registrationNumber} - {mission.vehicle?.brand}{' '}
-                      {mission.vehicle?.model}
-                    </p>
+                    <p className="text-sm">{mission.vehicleRegistration}</p>
                   )}
                 </div>
 
@@ -203,9 +225,7 @@ export default function MissionDetailsPage({ params }: { params: { id: string } 
                   {isEditing ? (
                     <Select
                       value={formData.driverId}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, driverId: value })
-                      }
+                      onValueChange={(value) => setFormData({ ...formData, driverId: value })}
                       required
                     >
                       <SelectTrigger>
@@ -214,21 +234,19 @@ export default function MissionDetailsPage({ params }: { params: { id: string } 
                       <SelectContent>
                         {availableDrivers.map((driver) => (
                           <SelectItem key={driver.id} value={driver.id}>
-                            {driver.user.firstName} {driver.user.lastName}
+                            {driver.firstName} {driver.lastName}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   ) : (
-                    <p className="text-sm">
-                      {mission.driver?.user.firstName} {mission.driver?.user.lastName}
-                    </p>
+                    <p className="text-sm">{mission.driverName}</p>
                   )}
                 </div>
 
-                {/* Priorité */}
+                {/* Priorite */}
                 <div className="space-y-2">
-                  <Label>Priorité</Label>
+                  <Label>Priorite</Label>
                   {isEditing ? (
                     <Select
                       value={formData.priority.toString()}
@@ -248,13 +266,13 @@ export default function MissionDetailsPage({ params }: { params: { id: string } 
                       </SelectContent>
                     </Select>
                   ) : (
-                    <p className="text-sm">{MissionPriority[mission.priority]}</p>
+                    <p className="text-sm">{priorityLabels[mission.priority]}</p>
                   )}
                 </div>
 
                 {/* Distance */}
                 <div className="space-y-2">
-                  <Label>Distance Estimée (km)</Label>
+                  <Label>Distance Estimee (km)</Label>
                   {isEditing ? (
                     <Input
                       type="number"
@@ -262,7 +280,7 @@ export default function MissionDetailsPage({ params }: { params: { id: string } 
                       step="0.1"
                       value={formData.estimatedDistance}
                       onChange={(e) =>
-                        setFormData({ ...formData, estimatedDistance: parseFloat(e.target.value) })
+                        setFormData({ ...formData, estimatedDistance: parseFloat(e.target.value) || 0 })
                       }
                       required
                     />
@@ -271,107 +289,58 @@ export default function MissionDetailsPage({ params }: { params: { id: string } 
                       {mission.estimatedDistance} km
                       {mission.actualDistance && (
                         <span className="text-muted-foreground ml-2">
-                          (Réel: {mission.actualDistance} km)
+                          (Reel: {mission.actualDistance} km)
                         </span>
                       )}
                     </p>
                   )}
                 </div>
 
-                {/* Lieu de Départ */}
+                {/* Date de Debut */}
                 <div className="space-y-2">
-                  <Label>Lieu de Départ</Label>
-                  {isEditing ? (
-                    <Input
-                      type="text"
-                      value={formData.startLocation}
-                      onChange={(e) =>
-                        setFormData({ ...formData, startLocation: e.target.value })
-                      }
-                      required
-                    />
-                  ) : (
-                    <p className="text-sm">{mission.startLocation}</p>
-                  )}
-                </div>
-
-                {/* Lieu d'Arrivée */}
-                <div className="space-y-2">
-                  <Label>Lieu d'Arrivée</Label>
-                  {isEditing ? (
-                    <Input
-                      type="text"
-                      value={formData.endLocation}
-                      onChange={(e) =>
-                        setFormData({ ...formData, endLocation: e.target.value })
-                      }
-                      required
-                    />
-                  ) : (
-                    <p className="text-sm">{mission.endLocation}</p>
-                  )}
-                </div>
-
-                {/* Début Prévu */}
-                <div className="space-y-2">
-                  <Label>Début Prévu</Label>
+                  <Label>Date de Debut</Label>
                   {isEditing ? (
                     <Input
                       type="datetime-local"
-                      value={formData.scheduledStartTime}
-                      onChange={(e) =>
-                        setFormData({ ...formData, scheduledStartTime: e.target.value })
-                      }
+                      value={formData.startDate}
+                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                       required
                     />
                   ) : (
                     <p className="text-sm">
-                      {format(new Date(mission.scheduledStartTime), 'dd/MM/yyyy HH:mm')}
-                      {mission.actualStartTime && (
-                        <span className="text-muted-foreground ml-2">
-                          (Réel: {format(new Date(mission.actualStartTime), 'dd/MM/yyyy HH:mm')})
-                        </span>
-                      )}
+                      {mission.startDate ? format(new Date(mission.startDate), 'dd/MM/yyyy HH:mm') : 'N/A'}
                     </p>
                   )}
                 </div>
 
-                {/* Fin Prévue */}
+                {/* Date de Fin */}
                 <div className="space-y-2">
-                  <Label>Fin Prévue</Label>
+                  <Label>Date de Fin</Label>
                   {isEditing ? (
                     <Input
                       type="datetime-local"
-                      value={formData.scheduledEndTime}
-                      onChange={(e) =>
-                        setFormData({ ...formData, scheduledEndTime: e.target.value })
-                      }
-                      required
+                      value={formData.endDate}
+                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                     />
                   ) : (
                     <p className="text-sm">
-                      {format(new Date(mission.scheduledEndTime), 'dd/MM/yyyy HH:mm')}
-                      {mission.actualEndTime && (
-                        <span className="text-muted-foreground ml-2">
-                          (Réel: {format(new Date(mission.actualEndTime), 'dd/MM/yyyy HH:mm')})
-                        </span>
-                      )}
+                      {mission.endDate ? format(new Date(mission.endDate), 'dd/MM/yyyy HH:mm') : 'Non definie'}
                     </p>
                   )}
                 </div>
               </div>
 
-              {/* Notes */}
+              {/* Description */}
               <div className="space-y-2">
-                <Label>Notes</Label>
+                <Label>Description</Label>
                 {isEditing ? (
                   <Textarea
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
                   />
                 ) : (
-                  <p className="text-sm">{mission.notes || 'Aucune note'}</p>
+                  <p className="text-sm">{mission.description || 'Aucune description'}</p>
                 )}
               </div>
 
@@ -401,11 +370,20 @@ export default function MissionDetailsPage({ params }: { params: { id: string } 
             <Button
               variant="outline"
               className="w-full justify-start"
-              onClick={() => handleStatusChange(MissionStatus.Pending)}
-              disabled={mission.status === MissionStatus.Pending}
+              onClick={() => handleStatusChange(MissionStatus.Planned)}
+              disabled={mission.status === MissionStatus.Planned}
             >
               <Clock className="mr-2 h-4 w-4" />
-              En attente
+              Planifiee
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => handleStatusChange(MissionStatus.Assigned)}
+              disabled={mission.status === MissionStatus.Assigned}
+            >
+              <User className="mr-2 h-4 w-4" />
+              Assignee
             </Button>
             <Button
               variant="outline"
@@ -413,7 +391,7 @@ export default function MissionDetailsPage({ params }: { params: { id: string } 
               onClick={() => handleStatusChange(MissionStatus.InProgress)}
               disabled={mission.status === MissionStatus.InProgress}
             >
-              <MapPin className="mr-2 h-4 w-4" />
+              <Truck className="mr-2 h-4 w-4" />
               En cours
             </Button>
             <Button
@@ -423,7 +401,7 @@ export default function MissionDetailsPage({ params }: { params: { id: string } 
               disabled={mission.status === MissionStatus.Completed}
             >
               <Calendar className="mr-2 h-4 w-4" />
-              Terminée
+              Terminee
             </Button>
             <Button
               variant="outline"
@@ -431,102 +409,38 @@ export default function MissionDetailsPage({ params }: { params: { id: string } 
               onClick={() => handleStatusChange(MissionStatus.Cancelled)}
               disabled={mission.status === MissionStatus.Cancelled}
             >
-              Annulée
+              Annulee
             </Button>
           </CardContent>
         </Card>
 
-        {/* Informations Véhicule */}
+        {/* Informations */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Truck className="h-5 w-5" />
-              Véhicule Assigné
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Immatriculation</span>
-              <span className="font-medium">{mission.vehicle?.registrationNumber}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Modèle</span>
-              <span className="font-medium">
-                {mission.vehicle?.brand} {mission.vehicle?.model}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Année</span>
-              <span className="font-medium">{mission.vehicle?.year}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Kilométrage</span>
-              <span className="font-medium">{mission.vehicle?.currentMileage} km</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Informations Conducteur */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              Conducteur Assigné
+              Assignation
             </CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
-            <div>
-              <div className="text-sm text-muted-foreground">Nom complet</div>
-              <div className="font-medium">
-                {mission.driver?.user.firstName} {mission.driver?.user.lastName}
-              </div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Email</div>
-              <div className="font-medium">{mission.driver?.user.email}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Téléphone</div>
-              <div className="font-medium">{mission.driver?.phoneNumber}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Permis</div>
-              <div className="font-medium">{mission.driver?.licenseNumber}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Expiration permis</div>
-              <div className="font-medium">
-                {mission.driver?.licenseExpiryDate &&
-                  format(new Date(mission.driver.licenseExpiryDate), 'dd/MM/yyyy')}
-              </div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Statut</div>
-              <Badge className={mission.driver?.isAvailable ? 'bg-green-500' : 'bg-red-500'}>
-                {mission.driver?.isAvailable ? 'Disponible' : 'Indisponible'}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Historique */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Historique</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Créée le</span>
-              <span className="font-medium">
-                {format(new Date(mission.createdAt), 'dd/MM/yyyy HH:mm')}
-              </span>
+              <span className="text-muted-foreground">Vehicule</span>
+              <span className="font-medium">{mission.vehicleRegistration}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Dernière mise à jour</span>
-              <span className="font-medium">
-                {format(new Date(mission.updatedAt), 'dd/MM/yyyy HH:mm')}
-              </span>
+              <span className="text-muted-foreground">Conducteur</span>
+              <span className="font-medium">{mission.driverName}</span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Distance</span>
+              <span className="font-medium">{mission.estimatedDistance} km</span>
+            </div>
+            {mission.actualDistance && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Distance reelle</span>
+                <span className="font-medium">{mission.actualDistance} km</span>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -16,16 +16,25 @@ import {
 import { useMissions } from '@/lib/hooks/useMissions';
 import { MissionPriority, MissionStatus } from '@/types/mission';
 import { format } from 'date-fns';
-import { Edit, MapPin, Plus, Trash2 } from 'lucide-react';
+import { Edit, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 const statusColors: Record<MissionStatus, string> = {
-  [MissionStatus.Pending]: 'bg-yellow-500',
+  [MissionStatus.Planned]: 'bg-gray-500',
+  [MissionStatus.Assigned]: 'bg-yellow-500',
   [MissionStatus.InProgress]: 'bg-blue-500',
   [MissionStatus.Completed]: 'bg-green-500',
   [MissionStatus.Cancelled]: 'bg-red-500',
+};
+
+const statusLabels: Record<MissionStatus, string> = {
+  [MissionStatus.Planned]: 'Planifiee',
+  [MissionStatus.Assigned]: 'Assignee',
+  [MissionStatus.InProgress]: 'En cours',
+  [MissionStatus.Completed]: 'Terminee',
+  [MissionStatus.Cancelled]: 'Annulee',
 };
 
 const priorityColors: Record<MissionPriority, string> = {
@@ -33,6 +42,13 @@ const priorityColors: Record<MissionPriority, string> = {
   [MissionPriority.Medium]: 'bg-blue-500',
   [MissionPriority.High]: 'bg-orange-500',
   [MissionPriority.Urgent]: 'bg-red-500',
+};
+
+const priorityLabels: Record<MissionPriority, string> = {
+  [MissionPriority.Low]: 'Faible',
+  [MissionPriority.Medium]: 'Moyenne',
+  [MissionPriority.High]: 'Haute',
+  [MissionPriority.Urgent]: 'Urgente',
 };
 
 export default function MissionsPage() {
@@ -52,23 +68,23 @@ export default function MissionsPage() {
   const { missions, isLoading, deleteMission } = useMissions(page, 10, filters);
 
   const handleDelete = async (id: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette mission ?')) {
+    if (confirm('Etes-vous sur de vouloir supprimer cette mission ?')) {
       try {
         await deleteMission(id);
-        toast.success('Mission supprimée avec succès');
-      } catch (error: any) {
-        toast.error(`Erreur: ${error.message || 'Erreur lors de la suppression'}`);
+        toast.success('Mission supprimee avec succes');
+      } catch (error: unknown) {
+        const err = error as { message?: string };
+        toast.error(`Erreur: ${err.message || 'Erreur lors de la suppression'}`);
       }
     }
   };
 
-  const filteredMissions = missions?.data.filter((mission) => {
+  const filteredMissions = missions?.items?.filter((mission) => {
     const matchesSearch =
-      mission.startLocation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mission.endLocation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mission.vehicle?.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mission.driver?.user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mission.driver?.user.lastName.toLowerCase().includes(searchTerm.toLowerCase());
+      mission.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mission.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mission.vehicleRegistration?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mission.driverName?.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesSearch;
   });
@@ -95,30 +111,31 @@ export default function MissionsPage() {
           <div className="flex gap-4 mt-4">
             <div className="flex-1">
               <Input
-                placeholder="Rechercher par lieu, véhicule ou conducteur..."
+                placeholder="Rechercher par nom, vehicule ou conducteur..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-md"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-45">
                 <SelectValue placeholder="Statut" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les statuts</SelectItem>
-                <SelectItem value="0">En attente</SelectItem>
-                <SelectItem value="1">En cours</SelectItem>
-                <SelectItem value="2">Terminée</SelectItem>
-                <SelectItem value="3">Annulée</SelectItem>
+                <SelectItem value="0">Planifiee</SelectItem>
+                <SelectItem value="1">Assignee</SelectItem>
+                <SelectItem value="2">En cours</SelectItem>
+                <SelectItem value="3">Terminee</SelectItem>
+                <SelectItem value="4">Annulee</SelectItem>
               </SelectContent>
             </Select>
             <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Priorité" />
+              <SelectTrigger className="w-45">
+                <SelectValue placeholder="Priorite" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Toutes priorités</SelectItem>
+                <SelectItem value="all">Toutes priorites</SelectItem>
                 <SelectItem value="0">Faible</SelectItem>
                 <SelectItem value="1">Moyenne</SelectItem>
                 <SelectItem value="2">Haute</SelectItem>
@@ -131,12 +148,12 @@ export default function MissionsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Véhicule</TableHead>
+                <TableHead>Nom</TableHead>
+                <TableHead>Vehicule</TableHead>
                 <TableHead>Conducteur</TableHead>
-                <TableHead>Départ → Arrivée</TableHead>
-                <TableHead>Date Prévue</TableHead>
+                <TableHead>Date</TableHead>
                 <TableHead>Statut</TableHead>
-                <TableHead>Priorité</TableHead>
+                <TableHead>Priorite</TableHead>
                 <TableHead>Distance</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -146,47 +163,42 @@ export default function MissionsPage() {
                 filteredMissions.map((mission) => (
                   <TableRow key={mission.id}>
                     <TableCell className="font-medium">
-                      {mission.vehicle?.registrationNumber || 'N/A'}
+                      {mission.name}
                       <div className="text-xs text-muted-foreground">
-                        {mission.vehicle?.brand} {mission.vehicle?.model}
+                        {mission.description}
                       </div>
                     </TableCell>
                     <TableCell>
-                      {mission.driver?.user.firstName} {mission.driver?.user.lastName}
-                      <div className="text-xs text-muted-foreground">
-                        {mission.driver?.licenseNumber}
-                      </div>
+                      {mission.vehicleRegistration || 'N/A'}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        <span className="text-sm">{mission.startLocation}</span>
-                      </div>
-                      <div className="text-xs text-muted-foreground">→ {mission.endLocation}</div>
+                      {mission.driverName || 'N/A'}
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {format(new Date(mission.scheduledStartTime), 'dd/MM/yyyy HH:mm')}
+                        {mission.startDate ? format(new Date(mission.startDate), 'dd/MM/yyyy HH:mm') : 'N/A'}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {format(new Date(mission.scheduledEndTime), 'dd/MM/yyyy HH:mm')}
-                      </div>
+                      {mission.endDate && (
+                        <div className="text-xs text-muted-foreground">
+                          Fin: {format(new Date(mission.endDate), 'dd/MM/yyyy HH:mm')}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge className={statusColors[mission.status]}>
-                        {MissionStatus[mission.status]}
+                        {statusLabels[mission.status]}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge className={priorityColors[mission.priority]}>
-                        {MissionPriority[mission.priority]}
+                        {priorityLabels[mission.priority]}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">{mission.estimatedDistance} km</div>
                       {mission.actualDistance && (
                         <div className="text-xs text-muted-foreground">
-                          Réel: {mission.actualDistance} km
+                          Reel: {mission.actualDistance} km
                         </div>
                       )}
                     </TableCell>
@@ -211,7 +223,7 @@ export default function MissionsPage() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                    Aucune mission trouvée
+                    Aucune mission trouvee
                   </TableCell>
                 </TableRow>
               )}
@@ -230,7 +242,7 @@ export default function MissionsPage() {
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
                 >
-                  Précédent
+                  Precedent
                 </Button>
                 <Button
                   variant="outline"

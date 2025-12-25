@@ -1,30 +1,40 @@
+export enum DriverStatus {
+  Available = 0,
+  OnDuty = 1,
+  OnBreak = 2,
+  OffDuty = 3,
+  OnLeave = 4,
+  Inactive = 5
+}
+
 export interface DriverDto {
   id: string;
-  userId: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
   licenseNumber: string;
   licenseExpiryDate: string;
-  phoneNumber: string;
-  address?: string;
-  emergencyContact?: string;
-  emergencyContactPhone?: string;
-  isAvailable: boolean;
-  createdAt: string;
-  updatedAt: string;
-  user: {
-    id: string;
-    username: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
+  status: DriverStatus;
+  currentVehicleId?: string;
+  currentVehicleRegistration?: string;
 }
 
 export interface CreateDriverRequest {
-  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
   licenseNumber: string;
   licenseExpiryDate: string;
+}
+
+export interface UpdateDriverRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
   phoneNumber: string;
-  address?: string;
-  emergencyContact?: string;
-  emergencyContactPhone?: string;
+  licenseExpiryDate: string;
+  status: DriverStatus;
 }

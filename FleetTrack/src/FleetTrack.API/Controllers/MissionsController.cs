@@ -30,6 +30,8 @@ public class MissionsController : ControllerBase
     /// </summary>
     /// <param name="pageNumber">Numéro de la page (défaut: 1)</param>
     /// <param name="pageSize">Taille de la page (défaut: 10)</param>
+    /// <param name="status">Statut optionnel pour filtrer les missions</param>
+    /// <param name="priority">Priorité optionnelle pour filtrer les missions</param>
     /// <param name="cancellationToken">Token d'annulation</param>
     /// <returns>Liste paginée des missions</returns>
     [HttpGet]
@@ -37,11 +39,14 @@ public class MissionsController : ControllerBase
     public async Task<ActionResult<ApiResponse<PagedResult<MissionDto>>>> GetAll(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
+        [FromQuery] MissionStatus? status = null,
+        [FromQuery] MissionPriority? priority = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Récupération de la liste des missions - Page: {PageNumber}, Taille: {PageSize}", pageNumber, pageSize);
+        _logger.LogInformation("Récupération de la liste des missions - Page: {PageNumber}, Taille: {PageSize}, Status: {Status}, Priority: {Priority}",
+            pageNumber, pageSize, status, priority);
 
-        var result = await _missionService.GetAllAsync(pageNumber, pageSize, cancellationToken);
+        var result = await _missionService.GetAllAsync(pageNumber, pageSize, status, priority, cancellationToken);
 
         return Ok(new ApiResponse<PagedResult<MissionDto>>
         {

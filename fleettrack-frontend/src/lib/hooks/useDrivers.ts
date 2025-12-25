@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { driversApi } from '@/lib/api/drivers';
-import { CreateDriverRequest } from '@/types/driver';
+import { CreateDriverRequest, UpdateDriverRequest } from '@/types/driver';
 
 export const useDrivers = (page = 1, pageSize = 10) => {
   const queryClient = useQueryClient();
@@ -20,10 +20,11 @@ export const useDrivers = (page = 1, pageSize = 10) => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: CreateDriverRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateDriverRequest }) =>
       driversApi.update(id, data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['drivers'] });
+      queryClient.invalidateQueries({ queryKey: ['driver', variables.id] });
     },
   });
 

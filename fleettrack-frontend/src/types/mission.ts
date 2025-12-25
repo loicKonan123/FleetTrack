@@ -1,11 +1,9 @@
-import { VehicleDto } from './vehicle';
-import { DriverDto } from './driver';
-
 export enum MissionStatus {
-  Pending = 0,
-  InProgress = 1,
-  Completed = 2,
-  Cancelled = 3
+  Planned = 0,
+  Assigned = 1,
+  InProgress = 2,
+  Completed = 3,
+  Cancelled = 4
 }
 
 export enum MissionPriority {
@@ -17,35 +15,29 @@ export enum MissionPriority {
 
 export interface MissionDto {
   id: string;
-  vehicleId: string;
-  driverId: string;
+  name: string;
+  description: string;
   status: MissionStatus;
   priority: MissionPriority;
-  startLocation: string;
-  endLocation: string;
-  scheduledStartTime: string;
-  scheduledEndTime: string;
-  actualStartTime?: string;
-  actualEndTime?: string;
+  startDate: string;
+  endDate?: string;
   estimatedDistance: number;
   actualDistance?: number;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-  vehicle?: VehicleDto;
-  driver?: DriverDto;
+  vehicleId: string;
+  vehicleRegistration: string;
+  driverId: string;
+  driverName: string;
 }
 
 export interface CreateMissionRequest {
+  name: string;
+  description: string;
+  priority: MissionPriority;
+  startDate: string;
+  endDate?: string;
+  estimatedDistance: number;
   vehicleId: string;
   driverId: string;
-  priority: MissionPriority;
-  startLocation: string;
-  endLocation: string;
-  scheduledStartTime: string;
-  scheduledEndTime: string;
-  estimatedDistance: number;
-  notes?: string;
 }
 
 export interface UpdateMissionStatusRequest {

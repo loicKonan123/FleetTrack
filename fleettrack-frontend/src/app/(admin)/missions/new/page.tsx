@@ -26,15 +26,14 @@ export default function NewMissionPage() {
   const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
+    name: '',
+    description: '',
     vehicleId: '',
     driverId: '',
     priority: MissionPriority.Medium,
-    startLocation: '',
-    endLocation: '',
-    scheduledStartTime: '',
-    scheduledEndTime: '',
+    startDate: '',
+    endDate: '',
     estimatedDistance: 0,
-    notes: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,21 +43,21 @@ export default function NewMissionPage() {
 
     try {
       await createMission({
+        name: formData.name,
+        description: formData.description,
         vehicleId: formData.vehicleId,
         driverId: formData.driverId,
         priority: formData.priority,
-        startLocation: formData.startLocation,
-        endLocation: formData.endLocation,
-        scheduledStartTime: formData.scheduledStartTime,
-        scheduledEndTime: formData.scheduledEndTime,
+        startDate: formData.startDate,
+        endDate: formData.endDate || undefined,
         estimatedDistance: formData.estimatedDistance,
-        notes: formData.notes || undefined,
       });
 
-      toast.success('Mission créée avec succès');
+      toast.success('Mission creee avec succes');
       router.push('/missions');
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || 'Erreur lors de la création';
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } }; message?: string };
+      const errorMessage = error.response?.data?.message || error.message || 'Erreur lors de la creation';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -67,8 +66,8 @@ export default function NewMissionPage() {
   };
 
   // Filter available vehicles and drivers
-  const availableVehicles = vehicles?.data.filter((v) => v.status === 0) || [];
-  const availableDrivers = drivers?.data.filter((d) => d.isAvailable) || [];
+  const availableVehicles = vehicles?.items?.filter((v) => v.status === 0) || [];
+  const availableDrivers = drivers?.items?.filter((d) => d.status === 0) || [];
 
   return (
     <div className="space-y-4 max-w-4xl">
@@ -80,7 +79,7 @@ export default function NewMissionPage() {
         </Link>
         <div>
           <h1 className="text-3xl font-bold">Nouvelle Mission</h1>
-          <p className="text-muted-foreground">Créer une nouvelle mission de transport</p>
+          <p className="text-muted-foreground">Creer une nouvelle mission de transport</p>
         </div>
       </div>
 
@@ -88,26 +87,39 @@ export default function NewMissionPage() {
         <CardHeader>
           <CardTitle>Informations de la Mission</CardTitle>
           <CardDescription>
-            Remplissez les informations nécessaires pour créer une nouvelle mission
+            Remplissez les informations necessaires pour creer une nouvelle mission
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
+              {/* Nom de la mission */}
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="name">
+                  Nom de la Mission <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Ex: Livraison Paris-Lyon"
+                  required
+                />
+              </div>
+
               {/* Véhicule */}
               <div className="space-y-2">
                 <Label htmlFor="vehicleId">
-                  Véhicule <span className="text-red-500">*</span>
+                  Vehicule <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={formData.vehicleId}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, vehicleId: value })
-                  }
+                  onValueChange={(value) => setFormData({ ...formData, vehicleId: value })}
                   required
                 >
                   <SelectTrigger id="vehicleId">
-                    <SelectValue placeholder="Sélectionner un véhicule" />
+                    <SelectValue placeholder="Selectionner un vehicule" />
                   </SelectTrigger>
                   <SelectContent>
                     {availableVehicles.map((vehicle) => (
@@ -118,7 +130,7 @@ export default function NewMissionPage() {
                   </SelectContent>
                 </Select>
                 {availableVehicles.length === 0 && (
-                  <p className="text-xs text-red-500">Aucun véhicule disponible</p>
+                  <p className="text-xs text-red-500">Aucun vehicule disponible</p>
                 )}
               </div>
 
@@ -129,18 +141,16 @@ export default function NewMissionPage() {
                 </Label>
                 <Select
                   value={formData.driverId}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, driverId: value })
-                  }
+                  onValueChange={(value) => setFormData({ ...formData, driverId: value })}
                   required
                 >
                   <SelectTrigger id="driverId">
-                    <SelectValue placeholder="Sélectionner un conducteur" />
+                    <SelectValue placeholder="Selectionner un conducteur" />
                   </SelectTrigger>
                   <SelectContent>
                     {availableDrivers.map((driver) => (
                       <SelectItem key={driver.id} value={driver.id}>
-                        {driver.user.firstName} {driver.user.lastName} - {driver.licenseNumber}
+                        {driver.firstName} {driver.lastName} - {driver.licenseNumber}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -153,7 +163,7 @@ export default function NewMissionPage() {
               {/* Priorité */}
               <div className="space-y-2">
                 <Label htmlFor="priority">
-                  Priorité <span className="text-red-500">*</span>
+                  Priorite <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={formData.priority.toString()}
@@ -177,7 +187,7 @@ export default function NewMissionPage() {
               {/* Distance Estimée */}
               <div className="space-y-2">
                 <Label htmlFor="estimatedDistance">
-                  Distance Estimée (km) <span className="text-red-500">*</span>
+                  Distance Estimee (km) <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="estimatedDistance"
@@ -186,87 +196,46 @@ export default function NewMissionPage() {
                   step="0.1"
                   value={formData.estimatedDistance}
                   onChange={(e) =>
-                    setFormData({ ...formData, estimatedDistance: parseFloat(e.target.value) })
+                    setFormData({ ...formData, estimatedDistance: parseFloat(e.target.value) || 0 })
                   }
                   required
                 />
               </div>
 
-              {/* Lieu de Départ */}
+              {/* Date de Début */}
               <div className="space-y-2">
-                <Label htmlFor="startLocation">
-                  Lieu de Départ <span className="text-red-500">*</span>
+                <Label htmlFor="startDate">
+                  Date de Debut <span className="text-red-500">*</span>
                 </Label>
                 <Input
-                  id="startLocation"
-                  type="text"
-                  value={formData.startLocation}
-                  onChange={(e) =>
-                    setFormData({ ...formData, startLocation: e.target.value })
-                  }
-                  placeholder="Adresse de départ"
-                  required
-                />
-              </div>
-
-              {/* Lieu d'Arrivée */}
-              <div className="space-y-2">
-                <Label htmlFor="endLocation">
-                  Lieu d'Arrivée <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="endLocation"
-                  type="text"
-                  value={formData.endLocation}
-                  onChange={(e) =>
-                    setFormData({ ...formData, endLocation: e.target.value })
-                  }
-                  placeholder="Adresse d'arrivée"
-                  required
-                />
-              </div>
-
-              {/* Heure de Début Prévue */}
-              <div className="space-y-2">
-                <Label htmlFor="scheduledStartTime">
-                  Début Prévu <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="scheduledStartTime"
+                  id="startDate"
                   type="datetime-local"
-                  value={formData.scheduledStartTime}
-                  onChange={(e) =>
-                    setFormData({ ...formData, scheduledStartTime: e.target.value })
-                  }
+                  value={formData.startDate}
+                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                   required
                 />
               </div>
 
-              {/* Heure de Fin Prévue */}
+              {/* Date de Fin */}
               <div className="space-y-2">
-                <Label htmlFor="scheduledEndTime">
-                  Fin Prévue <span className="text-red-500">*</span>
-                </Label>
+                <Label htmlFor="endDate">Date de Fin</Label>
                 <Input
-                  id="scheduledEndTime"
+                  id="endDate"
                   type="datetime-local"
-                  value={formData.scheduledEndTime}
-                  onChange={(e) =>
-                    setFormData({ ...formData, scheduledEndTime: e.target.value })
-                  }
-                  required
+                  value={formData.endDate}
+                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                 />
               </div>
             </div>
 
-            {/* Notes */}
+            {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="description">Description</Label>
               <Textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Instructions spéciales, détails de livraison, etc."
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Details de la mission, instructions speciales..."
                 rows={4}
               />
             </div>
@@ -280,7 +249,7 @@ export default function NewMissionPage() {
             <div className="flex gap-4">
               <Button type="submit" disabled={isSubmitting} className="flex-1">
                 <Save className="mr-2 h-4 w-4" />
-                {isSubmitting ? 'Création en cours...' : 'Créer la Mission'}
+                {isSubmitting ? 'Creation en cours...' : 'Creer la Mission'}
               </Button>
               <Link href="/missions" className="flex-1">
                 <Button type="button" variant="outline" className="w-full">

@@ -17,11 +17,19 @@ export default function DashboardPage() {
 
   const stats = {
     totalVehicles: vehicles?.totalCount || 0,
-    availableVehicles: vehicles?.data.filter((v) => v.status === VehicleStatus.Available).length || 0,
+    availableVehicles: Array.isArray(vehicles?.items)
+      ? vehicles.items.filter((v) => v.status === VehicleStatus.Available).length
+      : 0,
     totalDrivers: drivers?.totalCount || 0,
-    availableDrivers: drivers?.data.filter((d) => d.isAvailable).length || 0,
-    activeMissions: missions?.data.filter((m) => m.status === MissionStatus.InProgress).length || 0,
-    pendingMissions: missions?.data.filter((m) => m.status === MissionStatus.Pending).length || 0,
+    availableDrivers: Array.isArray(drivers?.items)
+      ? drivers.items.filter((d) => d.status === 0).length
+      : 0,
+    activeMissions: Array.isArray(missions?.items)
+      ? missions.items.filter((m) => m.status === MissionStatus.InProgress).length
+      : 0,
+    pendingMissions: Array.isArray(missions?.items)
+      ? missions.items.filter((m) => m.status === MissionStatus.Planned || m.status === MissionStatus.Assigned).length
+      : 0,
   };
 
   return (
@@ -81,21 +89,21 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {vehicles?.data && vehicles.data.length > 0 && (
-          <VehicleStatusChart vehicles={vehicles.data} />
+        {vehicles?.items && vehicles.items.length > 0 && (
+          <VehicleStatusChart vehicles={vehicles.items} />
         )}
 
-        {missions?.data && missions.data.length > 0 && (
-          <MissionStatusChart missions={missions.data} />
+        {missions?.items && missions.items.length > 0 && (
+          <MissionStatusChart missions={missions.items} />
         )}
       </div>
 
-      {missions?.data && missions.data.length > 0 && (
-        <RecentActivity missions={missions.data} />
+      {missions?.items && missions.items.length > 0 && (
+        <RecentActivity missions={missions.items} />
       )}
 
-      {(!vehicles?.data || vehicles.data.length === 0) &&
-       (!missions?.data || missions.data.length === 0) && (
+      {(!vehicles?.items || vehicles.items.length === 0) &&
+       (!missions?.items || missions.items.length === 0) && (
         <Card>
           <CardHeader>
             <CardTitle>Bienvenue sur FleetTrack</CardTitle>

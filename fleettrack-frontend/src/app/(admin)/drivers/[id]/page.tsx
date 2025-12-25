@@ -5,40 +5,60 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useDriver, useDrivers } from '@/lib/hooks/useDrivers';
+import { DriverStatus } from '@/types/driver';
 import { format } from 'date-fns';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 
-export default function DriverDetailsPage({ params }: { params: { id: string } }) {
+const statusLabels: Record<DriverStatus, string> = {
+  [DriverStatus.Available]: 'Disponible',
+  [DriverStatus.OnDuty]: 'En service',
+  [DriverStatus.OnBreak]: 'En pause',
+  [DriverStatus.OffDuty]: 'Hors service',
+  [DriverStatus.OnLeave]: 'En congé',
+  [DriverStatus.Inactive]: 'Inactif',
+};
+
+const statusColors: Record<DriverStatus, string> = {
+  [DriverStatus.Available]: 'bg-green-500',
+  [DriverStatus.OnDuty]: 'bg-blue-500',
+  [DriverStatus.OnBreak]: 'bg-yellow-500',
+  [DriverStatus.OffDuty]: 'bg-gray-500',
+  [DriverStatus.OnLeave]: 'bg-orange-500',
+  [DriverStatus.Inactive]: 'bg-red-500',
+};
+
+export default function DriverDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
-  const { data: driver, isLoading } = useDriver(params.id);
+  const { data: driver, isLoading } = useDriver(id);
   const { updateDriver } = useDrivers();
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
-    licenseNumber: '',
-    licenseExpiryDate: '',
+    firstName: '',
+    lastName: '',
+    email: '',
     phoneNumber: '',
-    address: '',
-    emergencyContact: '',
-    emergencyContactPhone: '',
+    licenseExpiryDate: '',
+    status: DriverStatus.Available,
   });
 
   useEffect(() => {
     if (driver) {
       setFormData({
-        licenseNumber: driver.licenseNumber,
-        licenseExpiryDate: driver.licenseExpiryDate.split('T')[0],
+        firstName: driver.firstName,
+        lastName: driver.lastName,
+        email: driver.email,
         phoneNumber: driver.phoneNumber,
-        address: driver.address || '',
-        emergencyContact: driver.emergencyContact || '',
-        emergencyContactPhone: driver.emergencyContactPhone || '',
+        licenseExpiryDate: driver.licenseExpiryDate.split('T')[0],
+        status: driver.status,
       });
     }
   }, [driver]);
@@ -50,11 +70,8 @@ export default function DriverDetailsPage({ params }: { params: { id: string } }
 
     try {
       await updateDriver({
-        id: params.id,
-        data: {
-          userId: driver!.userId,
-          ...formData,
-        },
+        id,
+        data: formData,
       });
 
       setIsEditing(false);
@@ -84,14 +101,14 @@ export default function DriverDetailsPage({ params }: { params: { id: string } }
           </Link>
           <div>
             <h1 className="text-3xl font-bold">
-              {driver.user.firstName} {driver.user.lastName}
+              {driver.firstName} {driver.lastName}
             </h1>
-            <p className="text-muted-foreground">{driver.user.email}</p>
+            <p className="text-muted-foreground">{driver.email}</p>
           </div>
         </div>
 
-        <Badge className={driver.isAvailable ? 'bg-green-500' : 'bg-red-500'}>
-          {driver.isAvailable ? 'Disponible' : 'Indisponible'}
+        <Badge className={statusColors[driver.status]}>
+          {statusLabels[driver.status]}
         </Badge>
       </div>
 
@@ -99,47 +116,53 @@ export default function DriverDetailsPage({ params }: { params: { id: string } }
         {/* Informations du conducteur */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Informations du Conducteur</CardTitle>
-              {!isEditing ? (
-                <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
-                  Modifier
-                </Button>
-              ) : (
-                <Button onClick={() => setIsEditing(false)} variant="ghost" size="sm">
-                  Annuler
-                </Button>
-              )}
-            </div>
+            <CardTitle>Informations du Conducteur</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            {error && (
+              <div className="bg-red-100 text-red-700 p-3 rounded-md text-sm">
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label>Numéro de Permis</Label>
+                <Label>Prénom</Label>
                 {isEditing ? (
                   <Input
-                    value={formData.licenseNumber}
-                    onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                     required
                   />
                 ) : (
-                  <p className="text-sm">{driver.licenseNumber}</p>
+                  <p className="text-sm">{driver.firstName}</p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label>Date d&apos;Expiration du Permis</Label>
+                <Label>Nom</Label>
                 {isEditing ? (
                   <Input
-                    type="date"
-                    value={formData.licenseExpiryDate}
-                    onChange={(e) => setFormData({ ...formData, licenseExpiryDate: e.target.value })}
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                     required
                   />
                 ) : (
-                  <p className="text-sm">
-                    {format(new Date(driver.licenseExpiryDate), 'dd/MM/yyyy')}
-                  </p>
+                  <p className="text-sm">{driver.lastName}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Email</Label>
+                {isEditing ? (
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                  />
+                ) : (
+                  <p className="text-sm">{driver.email}</p>
                 )}
               </div>
 
@@ -158,108 +181,104 @@ export default function DriverDetailsPage({ params }: { params: { id: string } }
               </div>
 
               <div className="space-y-2">
-                <Label>Adresse</Label>
+                <Label>Expiration du permis</Label>
                 {isEditing ? (
-                  <Textarea
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    rows={3}
+                  <Input
+                    type="date"
+                    value={formData.licenseExpiryDate}
+                    onChange={(e) => setFormData({ ...formData, licenseExpiryDate: e.target.value })}
+                    required
                   />
                 ) : (
-                  <p className="text-sm">{driver.address || 'Non renseignée'}</p>
+                  <p className="text-sm">
+                    {driver.licenseExpiryDate
+                      ? format(new Date(driver.licenseExpiryDate), 'dd/MM/yyyy')
+                      : 'N/A'}
+                  </p>
                 )}
               </div>
 
-              {error && (
-                <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-                  {error}
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label>Statut</Label>
+                {isEditing ? (
+                  <Select
+                    value={formData.status.toString()}
+                    onValueChange={(value) => setFormData({ ...formData, status: parseInt(value) })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(statusLabels).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-sm">
+                    <Badge className={statusColors[driver.status]}>
+                      {statusLabels[driver.status]}
+                    </Badge>
+                  </p>
+                )}
+              </div>
 
-              {isEditing && (
-                <Button type="submit" disabled={isSubmitting} className="w-full">
-                  <Save className="mr-2 h-4 w-4" />
-                  {isSubmitting ? 'Enregistrement...' : 'Enregistrer les Modifications'}
+              {isEditing ? (
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={isSubmitting}>
+                    <Save className="mr-2 h-4 w-4" />
+                    {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsEditing(false)}
+                    disabled={isSubmitting}
+                  >
+                    Annuler
+                  </Button>
+                </div>
+              ) : (
+                <Button type="button" onClick={() => setIsEditing(true)}>
+                  Modifier
                 </Button>
               )}
             </form>
           </CardContent>
         </Card>
 
-        {/* Contact d'urgence */}
+        {/* Informations de licence */}
         <Card>
           <CardHeader>
-            <CardTitle>Contact d&apos;Urgence</CardTitle>
+            <CardTitle>Informations de Licence</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Nom du Contact</Label>
-              {isEditing ? (
-                <Input
-                  value={formData.emergencyContact}
-                  onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
-                />
-              ) : (
-                <p className="text-sm">{driver.emergencyContact || 'Non renseigné'}</p>
-              )}
+            <div>
+              <div className="text-sm text-muted-foreground">N° de permis</div>
+              <div className="font-medium">{driver.licenseNumber}</div>
             </div>
-
-            <div className="space-y-2">
-              <Label>Téléphone d&apos;Urgence</Label>
-              {isEditing ? (
-                <Input
-                  type="tel"
-                  value={formData.emergencyContactPhone}
-                  onChange={(e) => setFormData({ ...formData, emergencyContactPhone: e.target.value })}
-                />
-              ) : (
-                <p className="text-sm">{driver.emergencyContactPhone || 'Non renseigné'}</p>
-              )}
+            <div>
+              <div className="text-sm text-muted-foreground">Expiration permis</div>
+              <div className="font-medium">
+                {driver.licenseExpiryDate
+                  ? format(new Date(driver.licenseExpiryDate), 'dd/MM/yyyy')
+                  : 'N/A'}
+              </div>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Statistiques */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Statistiques</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Créé le</span>
-              <span className="font-medium">
-                {format(new Date(driver.createdAt), 'dd/MM/yyyy')}
-              </span>
+            <div>
+              <div className="text-sm text-muted-foreground">Statut</div>
+              <Badge className={statusColors[driver.status]}>
+                {statusLabels[driver.status]}
+              </Badge>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Dernière mise à jour</span>
-              <span className="font-medium">
-                {format(new Date(driver.updatedAt), 'dd/MM/yyyy')}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Utilisateur lié */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Utilisateur Lié</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Nom d&apos;utilisateur</span>
-              <span className="font-medium">{driver.user.username}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Email</span>
-              <span className="font-medium">{driver.user.email}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Nom complet</span>
-              <span className="font-medium">
-                {driver.user.firstName} {driver.user.lastName}
-              </span>
-            </div>
+            {driver.currentVehicleRegistration && (
+              <div>
+                <div className="text-sm text-muted-foreground">Véhicule actuel</div>
+                <div className="font-medium">{driver.currentVehicleRegistration}</div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

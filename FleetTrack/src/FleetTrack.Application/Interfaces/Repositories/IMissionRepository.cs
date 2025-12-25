@@ -7,7 +7,9 @@ public interface IMissionRepository
 {
     Task<Mission?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IEnumerable<Mission>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Mission>> GetPagedWithFiltersAsync(int pageNumber, int pageSize, MissionStatus? status = null, MissionPriority? priority = null, CancellationToken cancellationToken = default);
     Task<int> CountAsync(CancellationToken cancellationToken = default);
+    Task<int> CountWithFiltersAsync(MissionStatus? status = null, MissionPriority? priority = null, CancellationToken cancellationToken = default);
     Task<IEnumerable<Mission>> GetActiveMissionsAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<Mission>> GetMissionsByStatusAsync(MissionStatus status, CancellationToken cancellationToken = default);
     Task<IEnumerable<Mission>> GetMissionsByVehicleIdAsync(Guid vehicleId, CancellationToken cancellationToken = default);

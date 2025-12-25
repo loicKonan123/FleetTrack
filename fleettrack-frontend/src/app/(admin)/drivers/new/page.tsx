@@ -2,14 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import { useDrivers } from '@/lib/hooks/useDrivers';
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -21,15 +17,6 @@ export default function NewDriverPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  // Récupérer la liste des utilisateurs sans conducteur assigné
-  const { data: users } = useQuery({
-    queryKey: ['users-without-driver'],
-    queryFn: async () => {
-      const response = await apiClient.get('/users');
-      return response.data;
-    },
-  });
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -39,19 +26,19 @@ export default function NewDriverPage() {
 
     try {
       await createDriver({
-        userId: formData.get('userId') as string,
+        firstName: formData.get('firstName') as string,
+        lastName: formData.get('lastName') as string,
+        email: formData.get('email') as string,
+        phoneNumber: formData.get('phoneNumber') as string,
         licenseNumber: formData.get('licenseNumber') as string,
         licenseExpiryDate: formData.get('licenseExpiryDate') as string,
-        phoneNumber: formData.get('phoneNumber') as string,
-        address: formData.get('address') as string || undefined,
-        emergencyContact: formData.get('emergencyContact') as string || undefined,
-        emergencyContactPhone: formData.get('emergencyContactPhone') as string || undefined,
       });
 
-      toast.success('Conducteur créé avec succès');
+      toast.success('Conducteur cree avec succes');
       router.push('/drivers');
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || 'Erreur lors de la création';
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } }; message?: string };
+      const errorMessage = error.response?.data?.message || error.message || 'Erreur lors de la creation';
       setError(errorMessage);
       toast.error(errorMessage);
       setIsSubmitting(false);
@@ -73,53 +60,46 @@ export default function NewDriverPage() {
         <CardHeader>
           <CardTitle>Informations du Conducteur</CardTitle>
           <CardDescription>
-            Remplissez les informations pour créer un nouveau conducteur
+            Remplissez les informations pour creer un nouveau conducteur
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Sélection de l'utilisateur */}
-            <div className="space-y-2">
-              <Label htmlFor="userId">Utilisateur *</Label>
-              <Select name="userId" required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionnez un utilisateur" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users?.map((user: any) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.firstName} {user.lastName} ({user.email})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">Prenom *</Label>
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  placeholder="Jean"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Nom *</Label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  placeholder="Dupont"
+                  required
+                />
+              </div>
             </div>
 
-            {/* Numéro de permis */}
             <div className="space-y-2">
-              <Label htmlFor="licenseNumber">Numéro de Permis *</Label>
+              <Label htmlFor="email">Email *</Label>
               <Input
-                id="licenseNumber"
-                name="licenseNumber"
-                placeholder="ex: ABC123456"
+                id="email"
+                name="email"
+                type="email"
+                placeholder="jean.dupont@example.com"
                 required
               />
             </div>
 
-            {/* Date d'expiration du permis */}
             <div className="space-y-2">
-              <Label htmlFor="licenseExpiryDate">Date d&apos;Expiration du Permis *</Label>
-              <Input
-                id="licenseExpiryDate"
-                name="licenseExpiryDate"
-                type="date"
-                required
-              />
-            </div>
-
-            {/* Téléphone */}
-            <div className="space-y-2">
-              <Label htmlFor="phoneNumber">Téléphone *</Label>
+              <Label htmlFor="phoneNumber">Telephone *</Label>
               <Input
                 id="phoneNumber"
                 name="phoneNumber"
@@ -129,37 +109,24 @@ export default function NewDriverPage() {
               />
             </div>
 
-            {/* Adresse */}
             <div className="space-y-2">
-              <Label htmlFor="address">Adresse</Label>
-              <Textarea
-                id="address"
-                name="address"
-                placeholder="Adresse complète du conducteur"
-                rows={3}
+              <Label htmlFor="licenseNumber">Numero de Permis *</Label>
+              <Input
+                id="licenseNumber"
+                name="licenseNumber"
+                placeholder="ex: ABC123456"
+                required
               />
             </div>
 
-            {/* Contact d'urgence */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="emergencyContact">Contact d&apos;Urgence</Label>
-                <Input
-                  id="emergencyContact"
-                  name="emergencyContact"
-                  placeholder="Nom du contact"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="emergencyContactPhone">Téléphone d&apos;Urgence</Label>
-                <Input
-                  id="emergencyContactPhone"
-                  name="emergencyContactPhone"
-                  type="tel"
-                  placeholder="+33 6 12 34 56 78"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="licenseExpiryDate">Date d&apos;Expiration du Permis *</Label>
+              <Input
+                id="licenseExpiryDate"
+                name="licenseExpiryDate"
+                type="date"
+                required
+              />
             </div>
 
             {error && (
@@ -175,7 +142,7 @@ export default function NewDriverPage() {
                 </Button>
               </Link>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Création...' : 'Créer le Conducteur'}
+                {isSubmitting ? 'Creation...' : 'Creer le Conducteur'}
               </Button>
             </div>
           </form>
