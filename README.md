@@ -23,6 +23,7 @@ FleetTrack est un système complet de gestion de flotte de véhicules développ�
 ### Fonctionnalités principales
 
 ✅ **Authentification JWT** avec rôles (Admin, Dispatcher, Driver, Viewer)
+✅ **Gestion des utilisateurs** (CRUD complet, rôles, activation, réinitialisation mot de passe)
 ✅ **SignalR GPS Tracking** en temps réel avec WebSockets
 ✅ Gestion complète des **véhicules** (camions, voitures, motos, bus)
 ✅ Gestion des **chauffeurs** avec permis et statuts
@@ -50,6 +51,7 @@ FleetTrack est un système complet de gestion de flotte de véhicules développ�
 |----------|-------------|--------|
 | **[INDEX.md](documentation/INDEX.md)** | Index principal - Point d'entrée de la documentation | 7 KB |
 | **[AUTH_DOCUMENTATION.md](documentation/AUTH_DOCUMENTATION.md)** | Documentation complète de l'authentification JWT et de la sécurité | 28 KB |
+| **[USER_MANAGEMENT.md](documentation/USER_MANAGEMENT.md)** | Documentation complète de la gestion des utilisateurs et rôles | 18 KB |
 | **[SIGNALR_DOCUMENTATION.md](documentation/SIGNALR_DOCUMENTATION.md)** | Documentation complète du tracking GPS temps réel avec SignalR | 28 KB |
 | **[DATABASE_SCHEMA.md](documentation/DATABASE_SCHEMA.md)** | Schéma complet de la base de données avec ERD, tables, relations, types | 37 KB |
 | **[ARCHITECTURE_FLOW.md](documentation/ARCHITECTURE_FLOW.md)** | Parcours du code à travers les couches (Controller → Service → Repository) | 26 KB |
@@ -321,6 +323,19 @@ await connection.start();
 - `POST /api/auth/register` - Inscription
 - `POST /api/auth/refresh` - Rafraîchir le token
 - `GET /api/auth/me` - Profil utilisateur
+
+### Users (Admin uniquement)
+- `GET /api/users` - Liste paginée des utilisateurs
+- `GET /api/users/{id}` - Détails d'un utilisateur
+- `GET /api/users/roles` - Liste des rôles disponibles
+- `POST /api/users` - Créer un utilisateur
+- `PUT /api/users/{id}` - Mettre à jour un utilisateur
+- `DELETE /api/users/{id}` - Supprimer (soft delete)
+- `POST /api/users/{id}/reset-password` - Réinitialiser le mot de passe
+- `POST /api/users/{id}/activate` - Activer un compte
+- `POST /api/users/{id}/deactivate` - Désactiver un compte
+
+**Documentation complète:** [documentation/USER_MANAGEMENT.md](documentation/USER_MANAGEMENT.md)
 
 ### Vehicles
 - `GET /api/vehicles` - Liste paginée

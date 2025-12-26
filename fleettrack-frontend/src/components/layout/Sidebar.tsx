@@ -10,6 +10,7 @@ import {
   MapPin,
   AlertCircle,
   Wrench,
+  UserCog,
 } from 'lucide-react';
 
 interface NavItem {
@@ -27,6 +28,7 @@ const adminNavItems: NavItem[] = [
   { title: 'Tracking', href: '/tracking', icon: MapPin },
   { title: 'Alerts', href: '/alerts', icon: AlertCircle },
   { title: 'Maintenance', href: '/maintenance', icon: Wrench },
+  { title: 'Utilisateurs', href: '/users', icon: UserCog, roles: ['Admin'] },
 ];
 
 export function Sidebar({ role }: { role?: string }) {

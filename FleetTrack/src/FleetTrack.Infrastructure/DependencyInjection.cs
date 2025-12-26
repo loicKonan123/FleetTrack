@@ -62,9 +62,15 @@ public static class DependencyInjection
         services.AddScoped<IVehicleRepository, VehicleRepository>();
         services.AddScoped<IDriverRepository, DriverRepository>();
         services.AddScoped<IMissionRepository, MissionRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
 
         // Enregistrement des services d'authentification
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+        // Enregistrement du service de gestion des utilisateurs
+        services.AddScoped<IUserService, Application.Services.UserService>();
 
         // Enregistrement du service de tracking GPS
         services.AddScoped<IGpsTrackingService, GpsTrackingService>();
@@ -103,9 +109,15 @@ public static class DependencyInjection
         services.AddScoped<IVehicleRepository, VehicleRepository>();
         services.AddScoped<IDriverRepository, DriverRepository>();
         services.AddScoped<IMissionRepository, MissionRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
 
         // Enregistrement des services d'authentification
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+        // Enregistrement du service de gestion des utilisateurs
+        services.AddScoped<IUserService, Application.Services.UserService>();
 
         // Enregistrement du service de tracking GPS
         services.AddScoped<IGpsTrackingService, GpsTrackingService>();

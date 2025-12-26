@@ -20,7 +20,63 @@ Bienvenue dans la documentation complète du système FleetTrack. Ce document vo
 
 ---
 
-### 2. [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) - Schéma de base de données
+### 2. [USER_MANAGEMENT.md](./USER_MANAGEMENT.md) - Gestion des utilisateurs
+**Description:** Documentation complète du système de gestion des utilisateurs, rôles et permissions.
+
+**Contenu:**
+- Vue d'ensemble des fonctionnalités
+- Architecture backend (Controller, Service, Repository, DTOs)
+- Endpoints API REST (CRUD, activation, réinitialisation mot de passe)
+- Interface frontend (pages de liste, création, édition)
+- Modèles de données (User, Role, DTOs TypeScript)
+- Sécurité (hachage BCrypt, autorisation Admin)
+- Guide d'utilisation pas à pas
+- Exemples de code (API, hooks React Query)
+
+**À consulter pour:**
+- Créer et gérer les utilisateurs
+- Comprendre le système de rôles
+- Implémenter des fonctionnalités utilisateur
+- Intégrer l'API de gestion des utilisateurs
+
+---
+
+### 3. [AUTH_DOCUMENTATION.md](./AUTH_DOCUMENTATION.md) - Authentification JWT
+**Description:** Documentation complète du système d'authentification avec JWT tokens.
+
+**Contenu:**
+- Configuration JWT (tokens, refresh tokens, expiration)
+- Endpoints d'authentification (login, register, refresh, revoke)
+- Système de rôles et permissions
+- Utilisation dans Swagger
+- Exemples de requêtes
+
+**À consulter pour:**
+- Comprendre l'authentification
+- Implémenter la connexion/inscription
+- Gérer les tokens JWT
+- Sécuriser les endpoints
+
+---
+
+### 4. [SIGNALR_DOCUMENTATION.md](./SIGNALR_DOCUMENTATION.md) - Tracking GPS temps réel
+**Description:** Documentation du hub SignalR pour le tracking GPS en temps réel.
+
+**Contenu:**
+- Configuration du hub SignalR
+- Méthodes disponibles (Subscribe, SendPosition, etc.)
+- Événements clients (ReceiveGpsPosition, ReceiveTrackingEvent)
+- Intégration JavaScript/TypeScript
+- Exemples de connexion
+
+**À consulter pour:**
+- Implémenter le tracking temps réel
+- S'abonner aux positions GPS
+- Envoyer des événements de tracking
+
+---
+
+### 5. [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) - Schéma de base de données
 **Description:** Documentation complète de la structure de la base de données SQLite avec toutes les tables, relations, types de données et index.
 
 **Contenu:**
@@ -50,7 +106,7 @@ Bienvenue dans la documentation complète du système FleetTrack. Ce document vo
 
 ---
 
-### 3. [ARCHITECTURE_FLOW.md](./ARCHITECTURE_FLOW.md) - Parcours du code
+### 6. [ARCHITECTURE_FLOW.md](./ARCHITECTURE_FLOW.md) - Parcours du code
 **Description:** Documentation détaillée du flux d'exécution du code à travers les différentes couches de l'architecture.
 
 **Contenu:**
@@ -83,7 +139,10 @@ Bienvenue dans la documentation complète du système FleetTrack. Ce document vo
 documentation/
 ├── INDEX.md                    (ce fichier - point d'entrée)
 ├── README.md                   (vue d'ensemble du projet)
+├── USER_MANAGEMENT.md          (gestion des utilisateurs)
 ├── DATABASE_SCHEMA.md          (schéma complet de la BD)
+├── AUTH_DOCUMENTATION.md       (authentification JWT)
+├── SIGNALR_DOCUMENTATION.md    (tracking GPS temps réel)
 └── ARCHITECTURE_FLOW.md        (parcours du code)
 ```
 
@@ -118,9 +177,12 @@ documentation/
 | Document | Taille | Sections | Dernière mise à jour |
 |----------|--------|----------|---------------------|
 | README.md | ~6 KB | 5 | 2025-12-18 |
+| USER_MANAGEMENT.md | ~18 KB | 8 | 2025-12-25 |
+| AUTH_DOCUMENTATION.md | ~28 KB | 7 | 2025-12-20 |
+| SIGNALR_DOCUMENTATION.md | ~28 KB | 6 | 2025-12-20 |
 | DATABASE_SCHEMA.md | ~38 KB | 9 | 2025-12-20 |
 | ARCHITECTURE_FLOW.md | ~26 KB | 5 | 2025-12-20 |
-| **TOTAL** | **~70 KB** | **19** | - |
+| **TOTAL** | **~144 KB** | **40** | - |
 
 ---
 
@@ -176,13 +238,21 @@ documentation/
 **Q: Comment débugger mon API ?**
 → Consultez [ARCHITECTURE_FLOW.md](./ARCHITECTURE_FLOW.md), puis le guide de debugging dans le README principal
 
+**Q: Comment créer un nouvel utilisateur ?**
+→ Consultez [USER_MANAGEMENT.md](./USER_MANAGEMENT.md), Section "Guide d'utilisation"
+
+**Q: Comment gérer les rôles et permissions ?**
+→ Consultez [USER_MANAGEMENT.md](./USER_MANAGEMENT.md), Section "Rôles disponibles"
+
 ---
 
 ## 🔄 Mise à jour de la documentation
 
-**Dernière mise à jour:** 2025-12-20
+**Dernière mise à jour:** 2025-12-25
 
 **Historique:**
+- 2025-12-25: Ajout de USER_MANAGEMENT.md (gestion des utilisateurs)
+- 2025-12-20: Ajout de AUTH_DOCUMENTATION.md et SIGNALR_DOCUMENTATION.md
 - 2025-12-20: Ajout de DATABASE_SCHEMA.md et INDEX.md
 - 2025-12-20: Ajout de ARCHITECTURE_FLOW.md
 - 2025-12-18: Création initiale du README.md
