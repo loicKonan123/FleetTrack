@@ -40,6 +40,19 @@ export interface CreateMissionRequest {
   driverId: string;
 }
 
+export interface UpdateMissionRequest {
+  name: string;
+  description: string;
+  priority: MissionPriority;
+  status?: MissionStatus;
+  vehicleId?: string;
+  driverId?: string;
+  startDate?: string;
+  endDate?: string;
+  estimatedDistance?: number;
+  actualDistance?: number;
+}
+
 export interface UpdateMissionStatusRequest {
   status: MissionStatus;
 }

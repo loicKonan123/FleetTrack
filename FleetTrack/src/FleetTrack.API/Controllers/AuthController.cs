@@ -1,4 +1,5 @@
 using FleetTrack.Application.DTOs.Auth;
+using FleetTrack.Application.DTOs.Common;
 using FleetTrack.Application.Exceptions;
 using FleetTrack.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -29,21 +30,21 @@ public class AuthController : ControllerBase
     /// <returns>Tokens JWT et informations utilisateur</returns>
     [HttpPost("login")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<AuthResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto loginDto)
+    public async Task<ActionResult<ApiResponse<AuthResponseDto>>> Login([FromBody] LoginDto loginDto)
     {
         try
         {
             var response = await _authService.LoginAsync(loginDto);
             _logger.LogInformation("User {Username} logged in successfully", loginDto.Username);
-            return Ok(response);
+            return Ok(ApiResponse<AuthResponseDto>.SuccessResponse(response, "Connexion réussie"));
         }
         catch (BusinessException ex)
         {
             _logger.LogWarning("Login failed for user {Username}: {Message}", loginDto.Username, ex.Message);
-            return Unauthorized(new { message = ex.Message });
+            return Unauthorized(ApiResponse<AuthResponseDto>.ErrorResponse(ex.Message));
         }
     }
 
@@ -54,20 +55,21 @@ public class AuthController : ControllerBase
     /// <returns>Tokens JWT et informations utilisateur</returns>
     [HttpPost("register")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<AuthResponseDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterDto registerDto)
+    public async Task<ActionResult<ApiResponse<AuthResponseDto>>> Register([FromBody] RegisterDto registerDto)
     {
         try
         {
             var response = await _authService.RegisterAsync(registerDto);
             _logger.LogInformation("New user registered: {Username}", registerDto.Username);
-            return CreatedAtAction(nameof(GetMe), new { id = response.User.Id }, response);
+            return CreatedAtAction(nameof(GetMe), new { id = response.User.Id },
+                ApiResponse<AuthResponseDto>.SuccessResponse(response, "Inscription réussie"));
         }
         catch (BusinessException ex)
         {
             _logger.LogWarning("Registration failed for {Username}: {Message}", registerDto.Username, ex.Message);
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(ApiResponse<AuthResponseDto>.ErrorResponse(ex.Message));
         }
     }
 
@@ -78,21 +80,21 @@ public class AuthController : ControllerBase
     /// <returns>Nouveaux tokens JWT</returns>
     [HttpPost("refresh")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<AuthResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<AuthResponseDto>> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
+    public async Task<ActionResult<ApiResponse<AuthResponseDto>>> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
     {
         try
         {
             var response = await _authService.RefreshTokenAsync(refreshTokenDto.RefreshToken);
             _logger.LogInformation("Token refreshed for user {Username}", response.User.Username);
-            return Ok(response);
+            return Ok(ApiResponse<AuthResponseDto>.SuccessResponse(response, "Token rafraîchi avec succès"));
         }
         catch (BusinessException ex)
         {
             _logger.LogWarning("Token refresh failed: {Message}", ex.Message);
-            return Unauthorized(new { message = ex.Message });
+            return Unauthorized(ApiResponse<AuthResponseDto>.ErrorResponse(ex.Message));
         }
     }
 
@@ -103,20 +105,20 @@ public class AuthController : ControllerBase
     /// <returns>Confirmation de révocation</returns>
     [HttpPost("revoke/{username}")]
     [Authorize(Roles = "Admin")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> RevokeToken(string username)
+    public async Task<ActionResult<ApiResponse<object>>> RevokeToken(string username)
     {
         try
         {
             await _authService.RevokeTokenAsync(username);
             _logger.LogInformation("Token revoked for user {Username}", username);
-            return Ok(new { message = $"Token révoqué pour l'utilisateur {username}" });
+            return Ok(ApiResponse<object>.SuccessResponse(null!, $"Token révoqué pour l'utilisateur {username}"));
         }
         catch (NotFoundException ex)
         {
             _logger.LogWarning("Token revocation failed for {Username}: {Message}", username, ex.Message);
-            return NotFound(new { message = ex.Message });
+            return NotFound(ApiResponse<object>.ErrorResponse(ex.Message));
         }
     }
 
@@ -126,23 +128,23 @@ public class AuthController : ControllerBase
     /// <returns>Informations utilisateur</returns>
     [HttpGet("me")]
     [Authorize]
-    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<UserDto>> GetMe()
+    public async Task<ActionResult<ApiResponse<UserDto>>> GetMe()
     {
         try
         {
             var username = User.Identity?.Name;
             if (string.IsNullOrEmpty(username))
-                return Unauthorized(new { message = "Utilisateur non authentifié" });
+                return Unauthorized(ApiResponse<UserDto>.ErrorResponse("Utilisateur non authentifié"));
 
             var user = await _authService.GetUserByUsernameAsync(username);
-            return Ok(user);
+            return Ok(ApiResponse<UserDto>.SuccessResponse(user, "Profil récupéré avec succès"));
         }
         catch (NotFoundException ex)
         {
             _logger.LogWarning("User not found: {Message}", ex.Message);
-            return NotFound(new { message = ex.Message });
+            return NotFound(ApiResponse<UserDto>.ErrorResponse(ex.Message));
         }
     }
 
@@ -153,19 +155,19 @@ public class AuthController : ControllerBase
     /// <returns>Informations utilisateur</returns>
     [HttpGet("{id}")]
     [Authorize(Roles = "Admin")]
-    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<UserDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UserDto>> GetUserById(Guid id)
+    public async Task<ActionResult<ApiResponse<UserDto>>> GetUserById(Guid id)
     {
         try
         {
             var user = await _authService.GetUserByIdAsync(id);
-            return Ok(user);
+            return Ok(ApiResponse<UserDto>.SuccessResponse(user, "Utilisateur récupéré avec succès"));
         }
         catch (NotFoundException ex)
         {
             _logger.LogWarning("User not found: {Message}", ex.Message);
-            return NotFound(new { message = ex.Message });
+            return NotFound(ApiResponse<UserDto>.ErrorResponse(ex.Message));
         }
     }
 }

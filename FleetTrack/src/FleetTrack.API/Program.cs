@@ -39,15 +39,19 @@ builder.Services.AddSwaggerConfiguration();
 var app = builder.Build();
 
 // Initialiser la base de données avec les données de base (rôles, admin)
-using (var scope = app.Services.CreateScope())
+// Skip migrations for in-memory database (used in integration tests)
+if (!app.Environment.IsEnvironment("Testing"))
 {
-    var context = scope.ServiceProvider.GetRequiredService<FleetTrack.Infrastructure.Data.FleetTrackDbContext>();
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<FleetTrack.Infrastructure.Data.FleetTrackDbContext>();
 
-    // Créer la base de données et appliquer les migrations automatiquement
-    await context.Database.MigrateAsync();
+        // Créer la base de données et appliquer les migrations automatiquement
+        await context.Database.MigrateAsync();
 
-    // Seed les données initiales
-    await FleetTrack.Infrastructure.Data.DataSeeder.SeedAsync(context);
+        // Seed les données initiales
+        await FleetTrack.Infrastructure.Data.DataSeeder.SeedAsync(context);
+    }
 }
 
 // Configure the HTTP request pipeline.

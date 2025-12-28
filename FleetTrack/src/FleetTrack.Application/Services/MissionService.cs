@@ -113,7 +113,73 @@ public class MissionService : IMissionService
             throw new NotFoundException(nameof(Mission), id);
         }
 
-        _mapper.Map(dto, mission);
+        // Vérifier le véhicule si modifié
+        if (dto.VehicleId.HasValue && dto.VehicleId != mission.VehicleId)
+        {
+            var vehicle = await _vehicleRepository.GetByIdAsync(dto.VehicleId.Value, cancellationToken);
+            if (vehicle == null)
+            {
+                throw new NotFoundException(nameof(Vehicle), dto.VehicleId.Value);
+            }
+            mission.VehicleId = dto.VehicleId.Value;
+        }
+
+        // Vérifier le conducteur si modifié
+        if (dto.DriverId.HasValue && dto.DriverId != mission.DriverId)
+        {
+            var driver = await _driverRepository.GetByIdAsync(dto.DriverId.Value, cancellationToken);
+            if (driver == null)
+            {
+                throw new NotFoundException(nameof(Driver), dto.DriverId.Value);
+            }
+            mission.DriverId = dto.DriverId.Value;
+        }
+
+        // Mettre à jour les autres champs
+        if (!string.IsNullOrEmpty(dto.Name))
+            mission.Name = dto.Name;
+
+        if (dto.Description != null)
+            mission.Description = dto.Description;
+
+        if (dto.Status.HasValue)
+            mission.Status = dto.Status.Value;
+
+        mission.Priority = dto.Priority;
+
+        if (dto.StartDate.HasValue)
+            mission.StartDate = dto.StartDate.Value;
+
+        if (dto.EndDate.HasValue)
+            mission.EndDate = dto.EndDate;
+
+        if (dto.EstimatedDistance.HasValue)
+            mission.EstimatedDistance = dto.EstimatedDistance.Value;
+
+        if (dto.ActualDistance.HasValue)
+            mission.ActualDistance = dto.ActualDistance;
+
+        await _missionRepository.UpdateAsync(mission, cancellationToken);
+
+        return _mapper.Map<MissionDto>(mission);
+    }
+
+    public async Task<MissionDto> UpdateStatusAsync(Guid id, MissionStatus status, CancellationToken cancellationToken = default)
+    {
+        var mission = await _missionRepository.GetByIdAsync(id, cancellationToken);
+        if (mission == null)
+        {
+            throw new NotFoundException(nameof(Mission), id);
+        }
+
+        mission.Status = status;
+
+        // Si la mission est terminée, enregistrer la date de fin
+        if (status == MissionStatus.Completed && !mission.EndDate.HasValue)
+        {
+            mission.EndDate = DateTime.UtcNow;
+        }
+
         await _missionRepository.UpdateAsync(mission, cancellationToken);
 
         return _mapper.Map<MissionDto>(mission);

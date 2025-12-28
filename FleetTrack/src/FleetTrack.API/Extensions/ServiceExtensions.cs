@@ -88,6 +88,24 @@ public static class ServiceExtensions
                 NameClaimType = System.Security.Claims.ClaimTypes.Name,
                 RoleClaimType = System.Security.Claims.ClaimTypes.Role
             };
+
+            // SignalR: Extraire le token depuis la query string pour WebSockets
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+
+                    // Si la requête est pour le hub SignalR
+                    var path = context.HttpContext.Request.Path;
+                    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                    {
+                        context.Token = accessToken;
+                    }
+
+                    return Task.CompletedTask;
+                }
+            };
         });
 
         return services;

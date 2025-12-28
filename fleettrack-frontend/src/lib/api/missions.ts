@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { MissionDto, CreateMissionRequest, UpdateMissionStatusRequest } from '@/types/mission';
+import { MissionDto, CreateMissionRequest, UpdateMissionRequest, UpdateMissionStatusRequest } from '@/types/mission';
 import { PaginatedResponse, ApiResponse } from './types';
 
 export const missionsApi = {
@@ -20,13 +20,14 @@ export const missionsApi = {
     return response.data.data;
   },
 
-  update: async (id: string, data: CreateMissionRequest): Promise<MissionDto> => {
+  update: async (id: string, data: UpdateMissionRequest): Promise<MissionDto> => {
     const response = await apiClient.put<ApiResponse<MissionDto>>(`/missions/${id}`, data);
     return response.data.data;
   },
 
-  updateStatus: async (id: string, status: UpdateMissionStatusRequest): Promise<void> => {
-    await apiClient.patch(`/missions/${id}/status`, status);
+  updateStatus: async (id: string, status: UpdateMissionStatusRequest): Promise<MissionDto> => {
+    const response = await apiClient.patch<ApiResponse<MissionDto>>(`/missions/${id}/status`, status);
+    return response.data.data;
   },
 
   delete: async (id: string): Promise<void> => {

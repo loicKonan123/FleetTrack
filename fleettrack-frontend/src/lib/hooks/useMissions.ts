@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { missionsApi } from '@/lib/api/missions';
-import { CreateMissionRequest, MissionStatus } from '@/types/mission';
+import { CreateMissionRequest, UpdateMissionRequest, MissionStatus } from '@/types/mission';
 
 export const useMissions = (page = 1, pageSize = 10, filters?: Record<string, string>) => {
   const queryClient = useQueryClient();
@@ -20,10 +20,11 @@ export const useMissions = (page = 1, pageSize = 10, filters?: Record<string, st
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: CreateMissionRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateMissionRequest }) =>
       missionsApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['missions'] });
+      queryClient.invalidateQueries({ queryKey: ['mission'] });
     },
   });
 
@@ -32,6 +33,7 @@ export const useMissions = (page = 1, pageSize = 10, filters?: Record<string, st
       missionsApi.updateStatus(id, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['missions'] });
+      queryClient.invalidateQueries({ queryKey: ['mission'] });
     },
   });
 

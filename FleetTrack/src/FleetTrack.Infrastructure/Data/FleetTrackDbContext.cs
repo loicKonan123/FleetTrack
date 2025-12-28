@@ -20,6 +20,7 @@ public class FleetTrackDbContext : DbContext
     public DbSet<Alert> Alerts => Set<Alert>();
     public DbSet<Maintenance> MaintenanceRecords => Set<Maintenance>();
     public DbSet<Zone> Zones => Set<Zone>();
+    public DbSet<TrackingSession> TrackingSessions => Set<TrackingSession>();
 
     // Authentication
     public DbSet<User> Users => Set<User>();
@@ -41,6 +42,7 @@ public class FleetTrackDbContext : DbContext
         modelBuilder.Entity<Alert>().HasQueryFilter(a => !a.IsDeleted);
         modelBuilder.Entity<Maintenance>().HasQueryFilter(m => !m.IsDeleted);
         modelBuilder.Entity<Zone>().HasQueryFilter(z => !z.IsDeleted);
+        modelBuilder.Entity<TrackingSession>().HasQueryFilter(t => !t.IsDeleted);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

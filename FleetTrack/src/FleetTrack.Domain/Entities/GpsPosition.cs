@@ -12,5 +12,9 @@ public class GpsPosition : BaseEntity
 
     // Navigation properties
     public Guid VehicleId { get; set; }
-    public Vehicle Vehicle { get; set; } = null!;
+    public virtual Vehicle Vehicle { get; set; } = null!;
+
+    // Lien vers la session de tracking
+    public Guid? TrackingSessionId { get; set; }
+    public virtual TrackingSession? TrackingSession { get; set; }
 }

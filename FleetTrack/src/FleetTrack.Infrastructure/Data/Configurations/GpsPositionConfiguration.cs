@@ -41,5 +41,12 @@ public class GpsPositionConfiguration : IEntityTypeConfiguration<GpsPosition>
         // Indexes
         builder.HasIndex(g => new { g.VehicleId, g.Timestamp });
         builder.HasIndex(g => g.Timestamp);
+        builder.HasIndex(g => g.TrackingSessionId);
+
+        // Relations
+        builder.HasOne(g => g.TrackingSession)
+            .WithMany(t => t.Positions)
+            .HasForeignKey(g => g.TrackingSessionId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

@@ -217,6 +217,31 @@ public class MissionsController : ControllerBase
     }
 
     /// <summary>
+    /// Met à jour le statut d'une mission
+    /// </summary>
+    /// <param name="id">Identifiant de la mission</param>
+    /// <param name="dto">Nouveau statut</param>
+    /// <param name="cancellationToken">Token d'annulation</param>
+    /// <returns>Mission mise à jour</returns>
+    [HttpPatch("{id:guid}/status")]
+    [Authorize(Roles = "Admin,Dispatcher,Driver")] // Admin, Dispatcher et Driver peuvent changer le statut
+    [ProducesResponseType(typeof(ApiResponse<MissionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<MissionDto>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<MissionDto>>> UpdateStatus(Guid id, [FromBody] UpdateMissionStatusDto dto, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Mise à jour du statut de la mission {MissionId} vers {Status}", id, dto.Status);
+
+        var mission = await _missionService.UpdateStatusAsync(id, dto.Status, cancellationToken);
+
+        return Ok(new ApiResponse<MissionDto>
+        {
+            Success = true,
+            Data = mission,
+            Message = "Statut de la mission mis à jour avec succès"
+        });
+    }
+
+    /// <summary>
     /// Assigne un véhicule et un conducteur à une mission
     /// </summary>
     /// <param name="id">Identifiant de la mission</param>

@@ -187,6 +187,9 @@ namespace FleetTrack.Infrastructure.Migrations
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("TrackingSessionId")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
 
@@ -196,6 +199,8 @@ namespace FleetTrack.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Timestamp");
+
+                    b.HasIndex("TrackingSessionId");
 
                     b.HasIndex("VehicleId", "Timestamp");
 
@@ -358,6 +363,91 @@ namespace FleetTrack.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
+                });
+
+            modelBuilder.Entity("FleetTrack.Domain.Entities.TrackingSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("DriverId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DriverName")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DriverPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double?>("LastHeading")
+                        .HasColumnType("REAL");
+
+                    b.Property<double?>("LastLatitude")
+                        .HasColumnType("REAL");
+
+                    b.Property<double?>("LastLongitude")
+                        .HasColumnType("REAL");
+
+                    b.Property<DateTime?>("LastPositionAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double?>("LastSpeed")
+                        .HasColumnType("REAL");
+
+                    b.Property<Guid?>("MissionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("PositionsCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("TotalDistance")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("REAL")
+                        .HasDefaultValue(0.0);
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("VehicleId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DriverId");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("MissionId");
+
+                    b.HasIndex("StartedAt");
+
+                    b.HasIndex("VehicleId");
+
+                    b.HasIndex("VehicleId", "IsActive");
+
+                    b.ToTable("TrackingSessions", (string)null);
                 });
 
             modelBuilder.Entity("FleetTrack.Domain.Entities.User", b =>
@@ -639,11 +729,18 @@ namespace FleetTrack.Infrastructure.Migrations
 
             modelBuilder.Entity("FleetTrack.Domain.Entities.GpsPosition", b =>
                 {
+                    b.HasOne("FleetTrack.Domain.Entities.TrackingSession", "TrackingSession")
+                        .WithMany("Positions")
+                        .HasForeignKey("TrackingSessionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("FleetTrack.Domain.Entities.Vehicle", "Vehicle")
                         .WithMany("GpsPositions")
                         .HasForeignKey("VehicleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("TrackingSession");
 
                     b.Navigation("Vehicle");
                 });
@@ -674,6 +771,31 @@ namespace FleetTrack.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Driver");
+
+                    b.Navigation("Vehicle");
+                });
+
+            modelBuilder.Entity("FleetTrack.Domain.Entities.TrackingSession", b =>
+                {
+                    b.HasOne("FleetTrack.Domain.Entities.Driver", "Driver")
+                        .WithMany()
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("FleetTrack.Domain.Entities.Mission", "Mission")
+                        .WithMany()
+                        .HasForeignKey("MissionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("FleetTrack.Domain.Entities.Vehicle", "Vehicle")
+                        .WithMany()
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("Mission");
 
                     b.Navigation("Vehicle");
                 });
@@ -731,6 +853,11 @@ namespace FleetTrack.Infrastructure.Migrations
             modelBuilder.Entity("FleetTrack.Domain.Entities.Role", b =>
                 {
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("FleetTrack.Domain.Entities.TrackingSession", b =>
+                {
+                    b.Navigation("Positions");
                 });
 
             modelBuilder.Entity("FleetTrack.Domain.Entities.Vehicle", b =>

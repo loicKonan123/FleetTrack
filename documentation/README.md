@@ -86,9 +86,12 @@ FleetTrack/
 - ✅ Soft Delete automatique
 - ✅ AutoMapper pour les mappings
 - ✅ FluentValidation pour les validations
-- ✅ Swagger/OpenAPI
+- ✅ Swagger/OpenAPI avec support JWT
 - ✅ CORS configuré
 - ✅ Logging structuré
+- ✅ Authentification JWT (Access + Refresh Tokens)
+- ✅ SignalR pour GPS temps réel
+- ✅ Gestion des utilisateurs et rôles
 
 ## 🗄️ Base de Données
 
@@ -123,6 +126,26 @@ Chaque couche dispose de sa propre documentation détaillée :
 
 ## 🧪 Tests
 
+Le projet dispose d'une couverture de tests complète :
+
+### Statistiques
+- **103 tests unitaires** - Services, repositories, validations
+- **38 tests d'intégration** - API endpoints, authentification
+- **141 tests au total**
+
+### Tests Unitaires (`FleetTrack.UnitTests`)
+- `VehicleServiceTests` - 24 tests
+- `DriverServiceTests` - 24 tests
+- `UserServiceTests` - 24 tests
+- `MissionServiceTests` - Suivi des missions
+- `AlertServiceTests` - Système d'alertes
+
+### Tests d'Intégration (`FleetTrack.IntegrationTests`)
+- `AuthControllerTests` - JWT login, register, refresh, revoke
+- `VehiclesControllerTests` - CRUD véhicules
+- `DriversControllerTests` - CRUD chauffeurs
+
+### Commandes
 ```bash
 # Tests unitaires
 dotnet test tests/FleetTrack.UnitTests
@@ -132,6 +155,9 @@ dotnet test tests/FleetTrack.IntegrationTests
 
 # Tous les tests
 dotnet test
+
+# Tests avec verbosité détaillée
+dotnet test --verbosity normal
 ```
 
 ## 🛠️ Développement
@@ -211,11 +237,13 @@ await _vehicleRepository.AddAsync(vehicle);
 
 ## 🔒 Sécurité
 
-- [ ] TODO: Ajouter Authentication (JWT)
-- [ ] TODO: Ajouter Authorization (Policies/Roles)
-- [ ] TODO: Rate Limiting
-- [ ] TODO: Input Validation
-- [ ] TODO: HTTPS obligatoire en production
+- [x] Authentication JWT (Access Token + Refresh Token)
+- [x] Authorization par rôles (Admin, Dispatcher, Driver)
+- [x] Hachage BCrypt pour les mots de passe
+- [x] Input Validation avec FluentValidation
+- [x] CORS configuré pour dev et production
+- [ ] Rate Limiting
+- [ ] HTTPS obligatoire en production
 
 ## 📊 Performance
 
@@ -226,13 +254,14 @@ await _vehicleRepository.AddAsync(vehicle);
 
 ## 🚧 Roadmap
 
-- [ ] Controllers REST pour toutes les entités
-- [ ] Authentification JWT
-- [ ] SignalR pour mises à jour temps réel
+- [x] Controllers REST pour toutes les entités
+- [x] Authentification JWT (Login, Register, Refresh, Revoke)
+- [x] SignalR pour tracking GPS temps réel
+- [x] Gestion des utilisateurs (CRUD, activation, reset password)
 - [ ] Rapports et statistiques
 - [ ] Export Excel/PDF
-- [ ] API de géolocalisation
 - [ ] Notifications push
+- [ ] Dashboard frontend
 
 ## 📄 License
 
@@ -245,5 +274,6 @@ await _vehicleRepository.AddAsync(vehicle);
 ---
 
 **Date de création** : 2025-12-18
+**Dernière mise à jour** : 2025-12-25
 **Version** : 1.0
 **Framework** : .NET 8.0

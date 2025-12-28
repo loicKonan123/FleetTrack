@@ -13,6 +13,7 @@ public interface IMissionService
     Task<IEnumerable<MissionDto>> GetByStatusAsync(MissionStatus status, CancellationToken cancellationToken = default);
     Task<MissionDto> CreateAsync(CreateMissionDto dto, CancellationToken cancellationToken = default);
     Task<MissionDto> UpdateAsync(Guid id, UpdateMissionDto dto, CancellationToken cancellationToken = default);
+    Task<MissionDto> UpdateStatusAsync(Guid id, MissionStatus status, CancellationToken cancellationToken = default);
     Task<MissionDto> AssignAsync(Guid id, AssignMissionDto dto, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

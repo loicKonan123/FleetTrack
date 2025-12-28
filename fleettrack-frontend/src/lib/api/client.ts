@@ -3,6 +3,19 @@ import { AuthResponse, RefreshTokenRequest } from '@/types/auth';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5115/api';
 
+// Helper to check if we're on the login page
+const isOnLoginPage = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return window.location.pathname === '/login' || window.location.pathname === '/register';
+};
+
+// Helper to redirect to login (only if not already there)
+const redirectToLogin = () => {
+  if (typeof window !== 'undefined' && !isOnLoginPage()) {
+    window.location.href = '/login';
+  }
+};
+
 // Create axios instance
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -102,19 +115,19 @@ apiClient.interceptors.response.use(
       const refresh = getRefreshToken();
       if (!refresh) {
         clearTokens();
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
+        redirectToLogin();
         return Promise.reject(error);
       }
 
       try {
-        const response = await axios.post<AuthResponse>(
+        // API returns ApiResponse<AuthResponse>
+        interface ApiResponseWrapper<T> { success: boolean; message: string; data: T; }
+        const response = await axios.post<ApiResponseWrapper<AuthResponse>>(
           `${API_BASE_URL}/auth/refresh`,
           { refreshToken: refresh } as RefreshTokenRequest
         );
 
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
+        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data.data;
         setTokens(newAccessToken, newRefreshToken);
 
         processQueue(null, newAccessToken);
@@ -126,9 +139,7 @@ apiClient.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError as AxiosError, null);
         clearTokens();
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
+        redirectToLogin();
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

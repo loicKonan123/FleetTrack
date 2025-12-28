@@ -4,6 +4,7 @@ using FleetTrack.Application.DTOs.Vehicle;
 using FleetTrack.Domain.Entities;
 using FleetTrack.Domain.Enums;
 using FleetTrack.IntegrationTests.Helpers;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -324,10 +325,14 @@ public class VehiclesControllerTests : IntegrationTestBase
         var response = await DeleteAsync($"/api/vehicles/{vehicleId}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Vérifier que le véhicule est soft deleted
-        var deletedVehicle = await context.Vehicles.FindAsync(vehicleId);
+        // Utiliser IgnoreQueryFilters pour contourner le filtre global IsDeleted
+        var freshContext = GetDbContext();
+        var deletedVehicle = await freshContext.Vehicles
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(v => v.Id == vehicleId);
         deletedVehicle.Should().NotBeNull();
         deletedVehicle!.IsDeleted.Should().BeTrue();
     }

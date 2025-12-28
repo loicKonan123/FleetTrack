@@ -176,13 +176,21 @@ documentation/
 
 | Document | Taille | Sections | Dernière mise à jour |
 |----------|--------|----------|---------------------|
-| README.md | ~6 KB | 5 | 2025-12-18 |
+| README.md | ~8 KB | 6 | 2025-12-25 |
 | USER_MANAGEMENT.md | ~18 KB | 8 | 2025-12-25 |
 | AUTH_DOCUMENTATION.md | ~28 KB | 7 | 2025-12-20 |
 | SIGNALR_DOCUMENTATION.md | ~28 KB | 6 | 2025-12-20 |
 | DATABASE_SCHEMA.md | ~38 KB | 9 | 2025-12-20 |
 | ARCHITECTURE_FLOW.md | ~26 KB | 5 | 2025-12-20 |
-| **TOTAL** | **~144 KB** | **40** | - |
+| **TOTAL** | **~146 KB** | **41** | - |
+
+## 🧪 Couverture de Tests
+
+| Type | Nombre | Description |
+|------|--------|-------------|
+| Tests Unitaires | 103 | Services, validations |
+| Tests Intégration | 38 | API endpoints, auth |
+| **TOTAL** | **141** | Couverture complète |
 
 ---
 
@@ -251,7 +259,10 @@ documentation/
 **Dernière mise à jour:** 2025-12-25
 
 **Historique:**
+- 2025-12-25: Mise à jour README (tests: 141 tests, sécurité JWT, roadmap)
 - 2025-12-25: Ajout de USER_MANAGEMENT.md (gestion des utilisateurs)
+- 2025-12-25: Correction AuthController pour utiliser ApiResponse wrapper
+- 2025-12-25: Ajout de 24 tests UserServiceTests
 - 2025-12-20: Ajout de AUTH_DOCUMENTATION.md et SIGNALR_DOCUMENTATION.md
 - 2025-12-20: Ajout de DATABASE_SCHEMA.md et INDEX.md
 - 2025-12-20: Ajout de ARCHITECTURE_FLOW.md

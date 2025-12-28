@@ -4,6 +4,7 @@ using FleetTrack.Application.DTOs.Driver;
 using FleetTrack.Domain.Entities;
 using FleetTrack.Domain.Enums;
 using FleetTrack.IntegrationTests.Helpers;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -295,10 +296,14 @@ public class DriversControllerTests : IntegrationTestBase
         var response = await DeleteAsync($"/api/drivers/{driverId}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Vérifier soft delete
-        var deletedDriver = await context.Drivers.FindAsync(driverId);
+        // Utiliser IgnoreQueryFilters pour contourner le filtre global IsDeleted
+        var freshContext = GetDbContext();
+        var deletedDriver = await freshContext.Drivers
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(d => d.Id == driverId);
         deletedDriver.Should().NotBeNull();
         deletedDriver!.IsDeleted.Should().BeTrue();
     }

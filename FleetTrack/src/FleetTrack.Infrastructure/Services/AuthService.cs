@@ -50,7 +50,7 @@ public class AuthService : IAuthService
         var refreshToken = GenerateRefreshToken();
 
         user.RefreshToken = refreshToken;
-        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(GetRefreshTokenExpirationDays());
 
         await _context.SaveChangesAsync();
 
@@ -107,7 +107,7 @@ public class AuthService : IAuthService
         var refreshToken = GenerateRefreshToken();
 
         user.RefreshToken = refreshToken;
-        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(GetRefreshTokenExpirationDays());
 
         await _context.SaveChangesAsync();
 
@@ -140,7 +140,7 @@ public class AuthService : IAuthService
         var newRefreshToken = GenerateRefreshToken();
 
         user.RefreshToken = newRefreshToken;
-        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(GetRefreshTokenExpirationDays());
 
         await _context.SaveChangesAsync();
 
@@ -205,7 +205,8 @@ public class AuthService : IAuthService
             new(ClaimTypes.GivenName, user.FirstName),
             new(ClaimTypes.Surname, user.LastName),
             new(ClaimTypes.Role, user.Role.Name),
-            new("role_id", user.RoleId.ToString())
+            new("role_id", user.RoleId.ToString()),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Unique token ID
         };
 
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -268,7 +269,13 @@ public class AuthService : IAuthService
     private int GetJwtExpirationMinutes()
     {
         var expirationStr = _configuration["Jwt:ExpirationMinutes"];
-        return int.TryParse(expirationStr, out var minutes) ? minutes : 60;
+        return int.TryParse(expirationStr, out var minutes) ? minutes : 43200; // Default: 30 days
+    }
+
+    private int GetRefreshTokenExpirationDays()
+    {
+        var expirationStr = _configuration["Jwt:RefreshTokenExpirationDays"];
+        return int.TryParse(expirationStr, out var days) ? days : 30; // Default: 30 days
     }
 
     #endregion

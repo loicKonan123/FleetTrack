@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FleetTrack - Test SignalR GPS Tracking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.connecting {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .auth-section {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+
+        input,
+        button {
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .positions {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .position-item {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .coordinates {
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .controls {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🚗 FleetTrack - Test GPS Tracking en Temps Réel</h1>
+
+        <div id="status" class="status disconnected">
+            ❌ Déconnecté
+        </div>
+
+        <!-- Section Authentification -->
+        <div class="auth-section">
+            <h3>1️⃣ Authentification</h3>
+            <input type="text" id="username" placeholder="Username" value="admin">
+            <input type="password" id="password" placeholder="Password" value="Admin123!">
+            <button onclick="login()">Se connecter</button>
+            <div id="authStatus"></div>
+        </div>
+
+        <!-- Section Connexion SignalR -->
+        <div class="controls">
+            <h3>2️⃣ Connexion SignalR</h3>
+            <button id="connectBtn" onclick="connectToHub()" disabled>Se connecter au Hub GPS</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>Se déconnecter</button>
+            <button id="subscribeAllBtn" onclick="subscribeToAll()" disabled>S'abonner à tous les véhicules</button>
+            <button onclick="clearPositions()">Effacer les positions</button>
+        </div>
+
+        <!-- Section Simulation -->
+        <div class="controls">
+            <h3>3️⃣ Simuler une position GPS</h3>
+            <input type="text" id="vehicleId" placeholder="Vehicle ID (GUID)" style="width: 300px;">
+            <input type="number" id="latitude" placeholder="Latitude" value="48.8566" step="0.0001">
+            <input type="number" id="longitude" placeholder="Longitude" value="2.3522" step="0.0001">
+            <button id="sendPosBtn" onclick="sendTestPosition()" disabled>Envoyer Position Test</button>
+        </div>
+
+        <!-- Positions reçues -->
+        <h3>📍 Positions GPS reçues en temps réel:</h3>
+        <div id="positions" class="positions">
+            <p style="color: #666;">Aucune position reçue pour le moment...</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        let connection = null;
+        let accessToken = null;
+        const apiBaseUrl = 'http://localhost:5115';
+
+        // Fonction de login
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const authStatus = document.getElementById('authStatus');
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    accessToken = data.accessToken;
+                    authStatus.innerHTML = `<div style="color: green; margin-top: 10px;">✅ Connecté en tant que ${data.user.username} (${data.user.roleName})</div>`;
+                    document.getElementById('connectBtn').disabled = false;
+                } else {
+                    const error = await response.text();
+                    authStatus.innerHTML = `<div class="error">❌ Erreur: ${error}</div>`;
+                }
+            } catch (error) {
+                authStatus.innerHTML = `<div class="error">❌ Erreur de connexion: ${error.message}</div>`;
+            }
+        }
+
+        // Connexion au hub SignalR
+        async function connectToHub() {
+            if (!accessToken) {
+                alert('Veuillez vous connecter d\'abord!');
+                return;
+            }
+
+            const status = document.getElementById('status');
+            status.className = 'status connecting';
+            status.textContent = '⏳ Connexion au hub GPS...';
+
+            try {
+                connection = new signalR.HubConnectionBuilder()
+                    .withUrl(`${apiBaseUrl}/hubs/gps`, {
+                        accessTokenFactory: () => accessToken
+                    })
+                    .withAutomaticReconnect()
+                    .configureLogging(signalR.LogLevel.Information)
+                    .build();
+
+                // Événements du hub
+                connection.on("ReceiveGpsPosition", (position) => {
+                    console.log("Position reçue:", position);
+                    addPositionToDisplay(position);
+                });
+
+                connection.on("ReceiveTrackingEvent", (event) => {
+                    console.log("Événement reçu:", event);
+                    addEventToDisplay(event);
+                });
+
+                connection.on("SubscriptionConfirmed", (message) => {
+                    console.log("Abonnement confirmé:", message);
+                });
+
+                connection.on("SubscribedToAllVehicles", (message) => {
+                    console.log("Abonné à tous les véhicules:", message);
+                });
+
+                await connection.start();
+
+                status.className = 'status connected';
+                status.textContent = '✅ Connecté au hub GPS';
+
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('disconnectBtn').disabled = false;
+                document.getElementById('subscribeAllBtn').disabled = false;
+                document.getElementById('sendPosBtn').disabled = false;
+
+            } catch (error) {
+                status.className = 'status disconnected';
+                status.textContent = '❌ Erreur de connexion: ' + error.message;
+                console.error('Erreur SignalR:', error);
+            }
+        }
+
+        // S'abonner à tous les véhicules
+        async function subscribeToAll() {
+            if (!connection) return;
+
+            try {
+                await connection.invoke("SubscribeToAllVehicles");
+                alert("✅ Abonné à tous les véhicules!");
+            } catch (error) {
+                alert("❌ Erreur: " + error.message);
+            }
+        }
+
+        // Envoyer une position de test
+        async function sendTestPosition() {
+            if (!connection) return;
+
+            const vehicleId = document.getElementById('vehicleId').value || crypto.randomUUID();
+            const latitude = parseFloat(document.getElementById('latitude').value);
+            const longitude = parseFloat(document.getElementById('longitude').value);
+
+            const position = {
+                vehicleId: vehicleId,
+                latitude: latitude,
+                longitude: longitude,
+                speed: Math.random() * 120,
+                heading: Math.random() * 360,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                await connection.invoke("SendGpsPosition", position);
+                console.log("Position envoyée:", position);
+            } catch (error) {
+                alert("❌ Erreur lors de l'envoi: " + error.message);
+            }
+        }
+
+        // Déconnexion
+        async function disconnect() {
+            if (connection) {
+                await connection.stop();
+                const status = document.getElementById('status');
+                status.className = 'status disconnected';
+                status.textContent = '❌ Déconnecté';
+
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('disconnectBtn').disabled = true;
+                document.getElementById('subscribeAllBtn').disabled = true;
+                document.getElementById('sendPosBtn').disabled = true;
+            }
+        }
+
+        // Afficher une position
+        function addPositionToDisplay(position) {
+            const positionsDiv = document.getElementById('positions');
+            if (positionsDiv.querySelector('p')) {
+                positionsDiv.innerHTML = '';
+            }
+
+            const item = document.createElement('div');
+            item.className = 'position-item';
+            item.innerHTML = `
+                <div class="timestamp">${new Date(position.timestamp).toLocaleString('fr-FR')}</div>
+                <div><strong>Véhicule:</strong> ${position.vehicleId}</div>
+                <div class="coordinates">📍 Lat: ${position.latitude.toFixed(6)}, Lon: ${position.longitude.toFixed(6)}</div>
+                <div>🚗 Vitesse: ${position.speed ? position.speed.toFixed(1) + ' km/h' : 'N/A'}</div>
+                <div>🧭 Direction: ${position.heading ? position.heading.toFixed(1) + '°' : 'N/A'}</div>
+            `;
+            positionsDiv.insertBefore(item, positionsDiv.firstChild);
+        }
+
+        // Afficher un événement
+        function addEventToDisplay(event) {
+            const positionsDiv = document.getElementById('positions');
+            if (positionsDiv.querySelector('p')) {
+                positionsDiv.innerHTML = '';
+            }
+
+            const item = document.createElement('div');
+            item.className = 'position-item';
+            item.style.borderLeftColor = '#ffc107';
+            item.innerHTML = `
+                <div class="timestamp">${new Date(event.timestamp).toLocaleString('fr-FR')}</div>
+                <div><strong>🔔 Événement:</strong> ${event.eventType}</div>
+                <div><strong>Véhicule:</strong> ${event.vehicleId}</div>
+                <div>${event.message || ''}</div>
+            `;
+            positionsDiv.insertBefore(item, positionsDiv.firstChild);
+        }
+
+        // Effacer les positions
+        function clearPositions() {
+            document.getElementById('positions').innerHTML = '<p style="color: #666;">Aucune position reçue pour le moment...</p>';
+        }
+    </script>
+</body>
+
+</html>

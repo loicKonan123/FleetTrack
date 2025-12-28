@@ -8,9 +8,11 @@ import {
   Truck,
   Users,
   MapPin,
+  Navigation,
   AlertCircle,
   Wrench,
   UserCog,
+  Smartphone,
 } from 'lucide-react';
 
 interface NavItem {
@@ -25,7 +27,8 @@ const adminNavItems: NavItem[] = [
   { title: 'Vehicles', href: '/vehicles', icon: Truck },
   { title: 'Drivers', href: '/drivers', icon: Users },
   { title: 'Missions', href: '/missions', icon: MapPin },
-  { title: 'Tracking', href: '/tracking', icon: MapPin },
+  { title: 'Tracking', href: '/tracking', icon: Navigation },
+  { title: 'Mode Conducteur', href: '/driver-tracking', icon: Smartphone },
   { title: 'Alerts', href: '/alerts', icon: AlertCircle },
   { title: 'Maintenance', href: '/maintenance', icon: Wrench },
   { title: 'Utilisateurs', href: '/users', icon: UserCog, roles: ['Admin'] },
