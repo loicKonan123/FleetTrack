@@ -60,6 +60,11 @@ export const clearTokens = () => {
   }
 };
 
+// Check if we have a token (for enabling queries)
+export const hasToken = (): boolean => {
+  return !!getAccessToken();
+};
+
 // Request interceptor: Add access token to headers
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {

@@ -3,13 +3,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { driversApi } from '@/lib/api/drivers';
 import { CreateDriverRequest, UpdateDriverRequest } from '@/types/driver';
+import { hasToken } from '@/lib/api/client';
+import { useClientReady } from './useClientReady';
 
 export const useDrivers = (page = 1, pageSize = 10) => {
   const queryClient = useQueryClient();
+  const isReady = useClientReady();
 
   const driversQuery = useQuery({
     queryKey: ['drivers', page, pageSize],
     queryFn: () => driversApi.getAll(page, pageSize),
+    refetchOnMount: 'always',
+    enabled: isReady && hasToken(),
   });
 
   const createMutation = useMutation({
@@ -46,9 +51,11 @@ export const useDrivers = (page = 1, pageSize = 10) => {
 };
 
 export const useDriver = (id: string) => {
+  const isReady = useClientReady();
+
   return useQuery({
     queryKey: ['driver', id],
     queryFn: () => driversApi.getById(id),
-    enabled: !!id,
+    enabled: !!id && isReady && hasToken(),
   });
 };

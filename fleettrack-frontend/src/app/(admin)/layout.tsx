@@ -1,14 +1,17 @@
-import { Header } from '@/components/layout/Header';
-import { Sidebar } from '@/components/layout/Sidebar';
+'use client';
+
+import { Navbar } from '@/components/layout/Navbar';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+
   return (
-    <div className="flex h-screen flex-col">
-      <Header />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar role="Admin" />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
+    <div className="min-h-screen bg-[var(--background)]">
+      <Navbar role={user?.roleName || 'Admin'} />
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {children}
+      </main>
     </div>
   );
 }

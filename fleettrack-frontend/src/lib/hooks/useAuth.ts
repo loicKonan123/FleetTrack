@@ -4,18 +4,24 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '@/lib/api/auth';
 import { LoginRequest, RegisterRequest } from '@/types/auth';
 import { useRouter } from 'next/navigation';
-import { clearTokens } from '@/lib/api/client';
+import { clearTokens, hasToken } from '@/lib/api/client';
+import { useClientReady } from './useClientReady';
 
 export const useAuth = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const isReady = useClientReady();
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: authApi.getCurrentUser,
     retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
+    enabled: isReady && hasToken(),
   });
+
+  // Auth is ready when we've checked for token and either have a user or confirmed no token
+  const isAuthReady = isReady && (!!user || !hasToken() || !isLoading);
 
   const loginMutation = useMutation({
     mutationFn: (data: LoginRequest) => authApi.login(data),
@@ -46,6 +52,7 @@ export const useAuth = () => {
     user,
     isLoading,
     isAuthenticated: !!user,
+    isAuthReady,
     login: loginMutation.mutateAsync,
     register: registerMutation.mutateAsync,
     logout: logoutMutation.mutateAsync,

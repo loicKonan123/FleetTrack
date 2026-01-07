@@ -1,5 +1,5 @@
 services:
-  # API FleetTrack
+  # API FleetTrack (Backend ASP.NET Core)
   api:
     build:
       context: ./FleetTrack
@@ -10,10 +10,15 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      # Configuration de la base de données (SQLite embarqué)
       - ConnectionStrings__DefaultConnection=Data Source=/app/data/FleetTrack.db
+      - Jwt__Secret=${JWT_SECRET:-VotreCleSecrete_MinimumLength32Characters!}
+      - Jwt__Issuer=FleetTrackAPI
+      - Jwt__Audience=FleetTrackClients
+      - Captcha__Enabled=${CAPTCHA_ENABLED:-false}
+      - Captcha__SiteKey=${CAPTCHA_SITE_KEY:-6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI}
+      - Captcha__SecretKey=${CAPTCHA_SECRET_KEY:-6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe}
+      - Frontend__Url=http://localhost:3000
     volumes:
-      # Persister la base de données SQLite
       - fleettrack-data:/app/data
     networks:
       - fleettrack-network
@@ -25,12 +30,31 @@ services:
       start_period: 40s
     restart: unless-stopped
 
-# Volumes pour persister les données
+  # Frontend FleetTrack (Next.js)
+  frontend:
+    build:
+      context: ./fleettrack-frontend
+      dockerfile: Dockerfile
+    container_name: fleettrack-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://api:8080/api
+      - NEXT_PUBLIC_SIGNALR_HUB_URL=http://api:8080/hubs/gps
+      - NEXT_PUBLIC_RECAPTCHA_SITE_KEY=${CAPTCHA_SITE_KEY:-6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI}
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - fleettrack-network
+    restart: unless-stopped
+
+# Volumes pour persister les donnees
 volumes:
   fleettrack-data:
     driver: local
 
-# Réseau pour la communication entre services
+# Reseau pour la communication entre services
 networks:
   fleettrack-network:
     driver: bridge

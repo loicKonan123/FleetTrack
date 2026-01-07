@@ -9,6 +9,7 @@ using FleetTrack.Domain.Entities;
 using FleetTrack.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace FleetTrack.Infrastructure.Services;
@@ -17,15 +18,27 @@ public class AuthService : IAuthService
 {
     private readonly FleetTrackDbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly ICaptchaService _captchaService;
+    private readonly ILogger<AuthService> _logger;
 
-    public AuthService(FleetTrackDbContext context, IConfiguration configuration)
+    public AuthService(
+        FleetTrackDbContext context,
+        IConfiguration configuration,
+        ICaptchaService captchaService,
+        ILogger<AuthService> logger)
     {
         _context = context;
         _configuration = configuration;
+        _captchaService = captchaService;
+        _logger = logger;
     }
 
     public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
     {
+        // Valider le CAPTCHA
+        if (!await _captchaService.ValidateAsync(loginDto.CaptchaToken))
+            throw new BusinessException("Validation CAPTCHA echouee");
+
         // Trouver l'utilisateur par username
         var user = await _context.Users
             .Include(u => u.Role)
@@ -65,6 +78,10 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
     {
+        // Valider le CAPTCHA
+        if (!await _captchaService.ValidateAsync(registerDto.CaptchaToken))
+            throw new BusinessException("Validation CAPTCHA echouee");
+
         // Vérifier si le username existe déjà
         if (await _context.Users.AnyAsync(u => u.Username == registerDto.Username))
             throw new BusinessException($"Le nom d'utilisateur '{registerDto.Username}' est déjà utilisé");
@@ -190,6 +207,78 @@ public class AuthService : IAuthService
         return MapToUserDto(user);
     }
 
+    public async Task ForgotPasswordAsync(ForgotPasswordDto forgotPasswordDto)
+    {
+        // Valider le CAPTCHA
+        if (!await _captchaService.ValidateAsync(forgotPasswordDto.CaptchaToken))
+            throw new BusinessException("Validation CAPTCHA echouee");
+
+        // Trouver l'utilisateur par email
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == forgotPasswordDto.Email);
+
+        // Pour des raisons de securite, on ne revele pas si l'email existe ou non
+        if (user == null)
+        {
+            _logger.LogInformation("Password reset requested for non-existent email: {Email}", forgotPasswordDto.Email);
+            return;
+        }
+
+        // Generer un token de reinitialisation
+        var token = GeneratePasswordResetToken();
+        var resetToken = new PasswordResetToken
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            Token = token,
+            ExpiresAt = DateTime.UtcNow.AddHours(1), // Token valide 1 heure
+            IsUsed = false,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        _context.Set<PasswordResetToken>().Add(resetToken);
+        await _context.SaveChangesAsync();
+
+        // TODO: Envoyer l'email avec le lien de reinitialisation
+        // Pour l'instant, on log le token (a remplacer par un vrai service d'email)
+        var resetUrl = $"{_configuration["Frontend:Url"]}/reset-password?token={token}";
+        _logger.LogInformation("Password reset link for {Email}: {ResetUrl}", forgotPasswordDto.Email, resetUrl);
+    }
+
+    public async Task ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
+    {
+        // Trouver le token
+        var resetToken = await _context.Set<PasswordResetToken>()
+            .Include(t => t.User)
+            .FirstOrDefaultAsync(t => t.Token == resetPasswordDto.Token);
+
+        if (resetToken == null)
+            throw new BusinessException("Token de reinitialisation invalide");
+
+        if (resetToken.IsUsed)
+            throw new BusinessException("Ce token a deja ete utilise");
+
+        if (resetToken.ExpiresAt < DateTime.UtcNow)
+            throw new BusinessException("Ce token a expire");
+
+        // Mettre a jour le mot de passe
+        var user = resetToken.User;
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(resetPasswordDto.NewPassword);
+        user.UpdatedAt = DateTime.UtcNow;
+
+        // Marquer le token comme utilise
+        resetToken.IsUsed = true;
+        resetToken.UpdatedAt = DateTime.UtcNow;
+
+        // Revoquer tous les refresh tokens existants pour forcer une reconnexion
+        user.RefreshToken = null;
+        user.RefreshTokenExpiryTime = null;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Password reset successful for user {UserId}", user.Id);
+    }
+
     #region Private Methods
 
     private string GenerateAccessToken(User user)
@@ -230,6 +319,14 @@ public class AuthService : IAuthService
         using var rng = RandomNumberGenerator.Create();
         rng.GetBytes(randomNumber);
         return Convert.ToBase64String(randomNumber);
+    }
+
+    private static string GeneratePasswordResetToken()
+    {
+        var randomNumber = new byte[32];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        return Convert.ToHexString(randomNumber).ToLower();
     }
 
     private static UserDto MapToUserDto(User user)

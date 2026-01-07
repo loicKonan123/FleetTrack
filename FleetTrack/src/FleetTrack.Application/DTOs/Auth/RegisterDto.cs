@@ -9,4 +9,5 @@ public class RegisterDto
     public string LastName { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; }
     public string RoleName { get; set; } = string.Empty; // Admin, Dispatcher, Driver, Viewer
+    public string? CaptchaToken { get; set; }
 }

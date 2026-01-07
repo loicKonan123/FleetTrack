@@ -15,6 +15,16 @@ export enum VehicleStatus {
   OutOfService = 3
 }
 
+export enum FuelType {
+  Gasoline = 0,
+  Diesel = 1,
+  Electric = 2,
+  Hybrid = 3,
+  LPG = 4,
+  CNG = 5,
+  Hydrogen = 6
+}
+
 export interface VehicleDto {
   id: string;
   registrationNumber: string;
@@ -23,15 +33,14 @@ export interface VehicleDto {
   year: number;
   type: VehicleType;
   status: VehicleStatus;
-  fuelType: string;
+  fuelType: FuelType;
   fuelCapacity: number;
-  currentMileage: number;
+  currentFuelLevel: number;
+  mileage: number;
   lastMaintenanceDate?: string;
-  lastMaintenanceMileage?: number;
   nextMaintenanceDate?: string;
-  nextMaintenanceMileage?: number;
-  createdAt: string;
-  updatedAt: string;
+  currentDriverId?: string;
+  currentDriverName?: string;
 }
 
 export interface CreateVehicleRequest {
@@ -40,9 +49,10 @@ export interface CreateVehicleRequest {
   model: string;
   year: number;
   type: VehicleType;
-  fuelType: string;
+  fuelType: FuelType;
   fuelCapacity: number;
-  currentMileage: number;
+  currentFuelLevel: number;
+  mileage: number;
 }
 
 export interface UpdateVehicleRequest {

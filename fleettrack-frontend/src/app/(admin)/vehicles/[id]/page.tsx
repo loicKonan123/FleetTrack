@@ -59,8 +59,8 @@ export default function VehicleDetailsPage({ params }: { params: Promise<{ id: s
         brand: vehicle.brand,
         model: vehicle.model,
         status: vehicle.status,
-        currentFuelLevel: 0,
-        mileage: vehicle.currentMileage || 0,
+        currentFuelLevel: vehicle.currentFuelLevel || 0,
+        mileage: vehicle.mileage || 0,
         nextMaintenanceDate: vehicle.nextMaintenanceDate?.split('T')[0] || '',
       });
     }
@@ -195,7 +195,7 @@ export default function VehicleDetailsPage({ params }: { params: Promise<{ id: s
                     required
                   />
                 ) : (
-                  <p className="text-sm">{vehicle.currentMileage?.toLocaleString() ?? 0} km</p>
+                  <p className="text-sm">{vehicle.mileage?.toLocaleString() ?? 0} km</p>
                 )}
               </div>
 
@@ -210,7 +210,7 @@ export default function VehicleDetailsPage({ params }: { params: Promise<{ id: s
                     onChange={(e) => setFormData({ ...formData, currentFuelLevel: parseFloat(e.target.value) || 0 })}
                   />
                 ) : (
-                  <p className="text-sm">{formData.currentFuelLevel}%</p>
+                  <p className="text-sm">{vehicle.currentFuelLevel}%</p>
                 )}
               </div>
 
@@ -274,7 +274,7 @@ export default function VehicleDetailsPage({ params }: { params: Promise<{ id: s
             </div>
             <div>
               <div className="text-sm text-muted-foreground">Kilometrage total</div>
-              <div className="font-medium">{vehicle.currentMileage?.toLocaleString() ?? 0} km</div>
+              <div className="font-medium">{vehicle.mileage?.toLocaleString() ?? 0} km</div>
             </div>
             <div>
               <div className="text-sm text-muted-foreground">Etat actuel</div>

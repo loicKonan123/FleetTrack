@@ -5,14 +5,14 @@
 ![Tests](https://img.shields.io/badge/tests-101%20passing-success)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-**Version:** 1.0
-**Date:** Décembre 2025
-**Framework:** .NET 8.0
-**Architecture:** Clean Architecture
+**Version:** 2.0
+**Date:** Janvier 2026
+**Backend:** ASP.NET Core 8.0 (Clean Architecture)
+**Frontend:** Next.js 15 + React 19 + TailwindCSS 4
 
-> Système complet de gestion de flotte avec tests automatisés et CI/CD
+> Systeme complet de gestion de flotte avec frontend moderne, tracking GPS temps reel et Docker
 
-[Documentation Complète](documentation/) | [Guide GitHub](GITHUB_GUIDE.md) | [Guide Tests](TESTS_GUIDE.md) | [API Swagger](http://localhost:5115/swagger)
+[Documentation](documentation/) | [API Swagger](http://localhost:8080/swagger) | [Frontend](http://localhost:3000)
 
 ---
 
@@ -60,34 +60,46 @@ FleetTrack est un système complet de gestion de flotte de véhicules développ�
 
 ---
 
-## 🚀 Démarrage rapide
+## 🚀 Demarrage rapide
 
-### Prérequis
-
-- **.NET 8.0 SDK** : [Télécharger](https://dotnet.microsoft.com/download/dotnet/8.0)
-- **Visual Studio Code** ou **Visual Studio 2022**
-- **DB Browser for SQLite** (optionnel) : Pour visualiser la base de données
-
-### Installation
+### Avec Docker (Recommande)
 
 ```bash
 # 1. Cloner le repository
-git clone <repository-url>
-cd backend_c#
+git clone https://github.com/loicKonan123/FleetTrack.git
+cd FleetTrack
 
-# 2. Restaurer les dépendances
-dotnet restore
+# 2. Lancer l'application complete
+docker-compose up -d
 
-# 3. Appliquer les migrations (créer la base de données)
-cd FleetTrack/src/FleetTrack.API
-dotnet ef database update --project ../FleetTrack.Infrastructure/FleetTrack.Infrastructure.csproj
-
-# 4. Lancer l'API
-dotnet run
+# L'application est disponible sur:
+# - Frontend: http://localhost:3000
+# - API: http://localhost:8080
+# - Swagger: http://localhost:8080/swagger
 ```
 
-L'API sera accessible sur **http://localhost:5115**
-Swagger UI : **http://localhost:5115/swagger**
+### Developpement Local
+
+#### Prerequis
+- **.NET 8.0 SDK** : [Telecharger](https://dotnet.microsoft.com/download/dotnet/8.0)
+- **Node.js 20+** : [Telecharger](https://nodejs.org/)
+- **Visual Studio Code** ou **Visual Studio 2022**
+
+#### Backend
+```bash
+cd FleetTrack/src/FleetTrack.API
+dotnet restore
+dotnet run
+```
+API disponible sur **http://localhost:5115** | Swagger: **http://localhost:5115/swagger**
+
+#### Frontend
+```bash
+cd fleettrack-frontend
+npm install
+npm run dev
+```
+Frontend disponible sur **http://localhost:3000**
 
 ### Compte administrateur par défaut
 
@@ -123,25 +135,25 @@ Vous aurez alors :
 ### Structure du projet
 
 ```
-backend_c#/
-├── FleetTrack/
+FleetTrack/
+├── FleetTrack/                        # Backend ASP.NET Core
 │   ├── src/
-│   │   ├── FleetTrack.Domain/         # Entités, Enums (couche métier)
+│   │   ├── FleetTrack.Domain/         # Entites, Enums (couche metier)
 │   │   ├── FleetTrack.Application/    # Services, DTOs, Interfaces
 │   │   ├── FleetTrack.Infrastructure/ # Repositories, DbContext, EF Core
-│   │   └── FleetTrack.API/            # Controllers, Middlewares, Program.cs, Dockerfile
-│   ├── tests/
-│   │   ├── FleetTrack.UnitTests/      # ✅ 60 tests unitaires
-│   │   └── FleetTrack.IntegrationTests/ # ✅ 22 tests d'intégration
-│   └── FleetTrack.sln                 # Solution .NET
-├── .github/
-│   └── workflows/
-│       └── dotnet-ci.yml              # 🚀 Pipeline CI/CD GitHub Actions
-├── documentation/                      # 📚 Documentation du projet
-├── run-tests.ps1                      # Script PowerShell d'exécution des tests
-├── run-tests.sh                       # Script Bash d'exécution des tests
-├── TESTS_GUIDE.md                     # Guide complet des tests
-├── GITHUB_GUIDE.md                    # Guide GitHub (1000+ lignes)
+│   │   └── FleetTrack.API/            # Controllers, Middlewares, Dockerfile
+│   └── tests/                         # Tests unitaires et integration
+├── fleettrack-frontend/               # Frontend Next.js
+│   ├── src/
+│   │   ├── app/                       # Pages (App Router)
+│   │   │   ├── (admin)/               # Dashboard, Vehicules, Missions...
+│   │   │   └── (auth)/                # Login, Register, Reset Password
+│   │   ├── components/                # Composants React reutilisables
+│   │   ├── lib/                       # API clients, Hooks, Utils
+│   │   └── types/                     # Types TypeScript
+│   └── Dockerfile                     # Image Docker frontend
+├── documentation/                     # Documentation technique
+├── docker-compose.yml                 # Orchestration Docker
 └── README.md                          # Ce fichier
 ```
 

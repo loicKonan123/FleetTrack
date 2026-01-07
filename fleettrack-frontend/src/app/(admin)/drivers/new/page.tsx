@@ -6,10 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 
 export default function NewDriverPage() {
   const router = useRouter();
@@ -46,108 +47,163 @@ export default function NewDriverPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <Link href="/drivers">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <h1 className="text-3xl font-bold">Nouveau Conducteur</h1>
-      </div>
+    <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center py-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="w-full max-w-2xl mx-auto"
+      >
+        <div className="flex items-center gap-4 mb-6">
+          <Link href="/drivers">
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold">Nouveau Conducteur</h1>
+            <p className="text-sm text-muted-foreground">Ajouter un conducteur a la flotte</p>
+          </div>
+        </div>
 
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle>Informations du Conducteur</CardTitle>
-          <CardDescription>
-            Remplissez les informations pour creer un nouveau conducteur
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+        <Card className="border-0 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <UserPlus className="h-5 w-5" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Informations du Conducteur</CardTitle>
+                <CardDescription className="text-blue-100">
+                  Remplissez les informations pour creer un nouveau conducteur
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName" className="text-sm font-medium">
+                    Prenom <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    placeholder="Jean"
+                    required
+                    className="h-11 rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="lastName" className="text-sm font-medium">
+                    Nom <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    placeholder="Dupont"
+                    required
+                    className="h-11 rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="firstName">Prenom *</Label>
+                <Label htmlFor="email" className="text-sm font-medium">
+                  Email <span className="text-red-500">*</span>
+                </Label>
                 <Input
-                  id="firstName"
-                  name="firstName"
-                  placeholder="Jean"
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="jean.dupont@example.com"
                   required
+                  className="h-11 rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="lastName">Nom *</Label>
+                <Label htmlFor="phoneNumber" className="text-sm font-medium">
+                  Telephone <span className="text-red-500">*</span>
+                </Label>
                 <Input
-                  id="lastName"
-                  name="lastName"
-                  placeholder="Dupont"
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="tel"
+                  placeholder="+33 6 12 34 56 78"
                   required
+                  className="h-11 rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="jean.dupont@example.com"
-                required
-              />
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="licenseNumber" className="text-sm font-medium">
+                    Numero de Permis <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="licenseNumber"
+                    name="licenseNumber"
+                    placeholder="ex: ABC123456"
+                    required
+                    className="h-11 rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="phoneNumber">Telephone *</Label>
-              <Input
-                id="phoneNumber"
-                name="phoneNumber"
-                type="tel"
-                placeholder="+33 6 12 34 56 78"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="licenseNumber">Numero de Permis *</Label>
-              <Input
-                id="licenseNumber"
-                name="licenseNumber"
-                placeholder="ex: ABC123456"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="licenseExpiryDate">Date d&apos;Expiration du Permis *</Label>
-              <Input
-                id="licenseExpiryDate"
-                name="licenseExpiryDate"
-                type="date"
-                required
-              />
-            </div>
-
-            {error && (
-              <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-                {error}
+                <div className="space-y-2">
+                  <Label htmlFor="licenseExpiryDate" className="text-sm font-medium">
+                    Date d&apos;Expiration <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="licenseExpiryDate"
+                    name="licenseExpiryDate"
+                    type="date"
+                    required
+                    className="h-11 rounded-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
               </div>
-            )}
 
-            <div className="flex gap-4 justify-end">
-              <Link href="/drivers">
-                <Button type="button" variant="outline">
-                  Annuler
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-600"
+                >
+                  {error}
+                </motion.div>
+              )}
+
+              <div className="flex gap-3 pt-4">
+                <Link href="/drivers" className="flex-1">
+                  <Button type="button" variant="outline" className="w-full h-11 rounded-lg">
+                    Annuler
+                  </Button>
+                </Link>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 h-11 rounded-lg bg-blue-600 hover:bg-blue-700"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <span className="animate-spin mr-2">&#9696;</span>
+                      Creation...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      Creer le Conducteur
+                    </>
+                  )}
                 </Button>
-              </Link>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Creation...' : 'Creer le Conducteur'}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }

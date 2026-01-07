@@ -3,13 +3,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { missionsApi } from '@/lib/api/missions';
 import { CreateMissionRequest, UpdateMissionRequest, MissionStatus } from '@/types/mission';
+import { hasToken } from '@/lib/api/client';
+import { useClientReady } from './useClientReady';
 
 export const useMissions = (page = 1, pageSize = 10, filters?: Record<string, string>) => {
   const queryClient = useQueryClient();
+  const isReady = useClientReady();
 
   const missionsQuery = useQuery({
     queryKey: ['missions', page, pageSize, filters],
     queryFn: () => missionsApi.getAll(page, pageSize, filters),
+    refetchOnMount: 'always',
+    enabled: isReady && hasToken(),
   });
 
   const createMutation = useMutation({
@@ -56,9 +61,11 @@ export const useMissions = (page = 1, pageSize = 10, filters?: Record<string, st
 };
 
 export const useMission = (id: string) => {
+  const isReady = useClientReady();
+
   return useQuery({
     queryKey: ['mission', id],
     queryFn: () => missionsApi.getById(id),
-    enabled: !!id,
+    enabled: !!id && isReady && hasToken(),
   });
 };

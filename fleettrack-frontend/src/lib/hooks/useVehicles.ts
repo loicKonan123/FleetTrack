@@ -3,13 +3,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { vehiclesApi } from '@/lib/api/vehicles';
 import { CreateVehicleRequest, UpdateVehicleRequest } from '@/types/vehicle';
+import { hasToken } from '@/lib/api/client';
+import { useClientReady } from './useClientReady';
 
 export const useVehicles = (page = 1, pageSize = 10) => {
   const queryClient = useQueryClient();
+  const isReady = useClientReady();
 
   const vehiclesQuery = useQuery({
     queryKey: ['vehicles', page, pageSize],
     queryFn: () => vehiclesApi.getAll(page, pageSize),
+    refetchOnMount: 'always',
+    enabled: isReady && hasToken(),
   });
 
   const createMutation = useMutation({
@@ -46,9 +51,11 @@ export const useVehicles = (page = 1, pageSize = 10) => {
 };
 
 export const useVehicle = (id: string) => {
+  const isReady = useClientReady();
+
   return useQuery({
     queryKey: ['vehicle', id],
     queryFn: () => vehiclesApi.getById(id),
-    enabled: !!id,
+    enabled: !!id && isReady && hasToken(),
   });
 };

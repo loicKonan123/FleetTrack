@@ -3,13 +3,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersApi } from '@/lib/api/users';
 import { CreateUserRequest, UpdateUserRequest, ResetPasswordRequest } from '@/types/user';
+import { hasToken } from '@/lib/api/client';
+import { useClientReady } from './useClientReady';
 
 export const useUsers = (page = 1, pageSize = 10) => {
   const queryClient = useQueryClient();
+  const isReady = useClientReady();
 
   const usersQuery = useQuery({
     queryKey: ['users', page, pageSize],
     queryFn: () => usersApi.getAll(page, pageSize),
+    refetchOnMount: 'always',
+    enabled: isReady && hasToken(),
   });
 
   const createMutation = useMutation({
@@ -68,16 +73,21 @@ export const useUsers = (page = 1, pageSize = 10) => {
 };
 
 export const useUser = (id: string) => {
+  const isReady = useClientReady();
+
   return useQuery({
     queryKey: ['user', id],
     queryFn: () => usersApi.getById(id),
-    enabled: !!id,
+    enabled: !!id && isReady && hasToken(),
   });
 };
 
 export const useRoles = () => {
+  const isReady = useClientReady();
+
   return useQuery({
     queryKey: ['roles'],
     queryFn: () => usersApi.getRoles(),
+    enabled: isReady && hasToken(),
   });
 };

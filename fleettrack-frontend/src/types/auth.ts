@@ -1,6 +1,7 @@
 export interface LoginRequest {
   username: string;
   password: string;
+  captchaToken?: string;
 }
 
 export interface RegisterRequest {
@@ -10,6 +11,17 @@ export interface RegisterRequest {
   firstName: string;
   lastName: string;
   phoneNumber?: string;
+  captchaToken?: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+  captchaToken?: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
 }
 
 export interface AuthResponse {

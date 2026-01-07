@@ -1,5 +1,5 @@
 import { apiClient, setTokens, clearTokens } from './client';
-import { LoginRequest, RegisterRequest, AuthResponse, UserDto } from '@/types/auth';
+import { LoginRequest, RegisterRequest, AuthResponse, UserDto, ForgotPasswordRequest, ResetPasswordRequest } from '@/types/auth';
 import { ApiResponse } from './types';
 
 export const authApi = {
@@ -29,5 +29,13 @@ export const authApi = {
   getCurrentUser: async (): Promise<UserDto> => {
     const response = await apiClient.get<ApiResponse<UserDto>>('/auth/me');
     return response.data.data;
+  },
+
+  forgotPassword: async (data: ForgotPasswordRequest): Promise<void> => {
+    await apiClient.post('/auth/forgot-password', data);
+  },
+
+  resetPassword: async (data: ResetPasswordRequest): Promise<void> => {
+    await apiClient.post('/auth/reset-password', data);
   },
 };

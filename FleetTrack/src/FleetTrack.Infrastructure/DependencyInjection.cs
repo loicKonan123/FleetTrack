@@ -69,6 +69,9 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
 
+        // Enregistrement du service CAPTCHA
+        services.AddHttpClient<ICaptchaService, CaptchaService>();
+
         // Enregistrement du service de gestion des utilisateurs
         services.AddScoped<IUserService, Application.Services.UserService>();
 
@@ -77,6 +80,10 @@ public static class DependencyInjection
 
         // Enregistrement du service de sessions de tracking
         services.AddScoped<ITrackingSessionService, TrackingSessionService>();
+
+        // Enregistrement des services Maintenance et Alert
+        services.AddScoped<IMaintenanceService, MaintenanceService>();
+        services.AddScoped<IAlertService, AlertService>();
 
         return services;
     }
@@ -119,6 +126,9 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
 
+        // Enregistrement du service CAPTCHA
+        services.AddHttpClient<ICaptchaService, CaptchaService>();
+
         // Enregistrement du service de gestion des utilisateurs
         services.AddScoped<IUserService, Application.Services.UserService>();
 
@@ -127,6 +137,10 @@ public static class DependencyInjection
 
         // Enregistrement du service de sessions de tracking
         services.AddScoped<ITrackingSessionService, TrackingSessionService>();
+
+        // Enregistrement des services Maintenance et Alert
+        services.AddScoped<IMaintenanceService, MaintenanceService>();
+        services.AddScoped<IAlertService, AlertService>();
 
         return services;
     }

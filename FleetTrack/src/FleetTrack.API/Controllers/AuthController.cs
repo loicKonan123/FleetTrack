@@ -170,4 +170,52 @@ public class AuthController : ControllerBase
             return NotFound(ApiResponse<UserDto>.ErrorResponse(ex.Message));
         }
     }
+
+    /// <summary>
+    /// Demander une reinitialisation de mot de passe
+    /// </summary>
+    /// <param name="forgotPasswordDto">Email de l'utilisateur</param>
+    /// <returns>Confirmation d'envoi</returns>
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<object>>> ForgotPassword([FromBody] ForgotPasswordDto forgotPasswordDto)
+    {
+        try
+        {
+            await _authService.ForgotPasswordAsync(forgotPasswordDto);
+            _logger.LogInformation("Password reset requested for email: {Email}", forgotPasswordDto.Email);
+            return Ok(ApiResponse<object>.SuccessResponse(null!, "Si un compte existe avec cet email, un lien de reinitialisation a ete envoye"));
+        }
+        catch (BusinessException ex)
+        {
+            _logger.LogWarning("Password reset failed: {Message}", ex.Message);
+            return BadRequest(ApiResponse<object>.ErrorResponse(ex.Message));
+        }
+    }
+
+    /// <summary>
+    /// Reinitialiser le mot de passe avec un token
+    /// </summary>
+    /// <param name="resetPasswordDto">Token et nouveau mot de passe</param>
+    /// <returns>Confirmation de reinitialisation</returns>
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<object>>> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+    {
+        try
+        {
+            await _authService.ResetPasswordAsync(resetPasswordDto);
+            _logger.LogInformation("Password reset successful");
+            return Ok(ApiResponse<object>.SuccessResponse(null!, "Mot de passe reinitialise avec succes"));
+        }
+        catch (BusinessException ex)
+        {
+            _logger.LogWarning("Password reset failed: {Message}", ex.Message);
+            return BadRequest(ApiResponse<object>.ErrorResponse(ex.Message));
+        }
+    }
 }
