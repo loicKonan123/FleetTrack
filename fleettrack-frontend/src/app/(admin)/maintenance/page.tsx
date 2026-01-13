@@ -391,10 +391,10 @@ function MaintenanceCard({ maintenance: m, onComplete, onDelete, isOverdue }: { 
               <Wrench className="w-3 h-3 mr-1" />
               {MaintenanceTypeLabels[m.type as MaintenanceType]}
             </Badge>
-            <p className="text-sm text-[var(--muted-foreground)] line-clamp-2">{m.description}</p>
+            <p className="text-sm text-(--muted-foreground) line-clamp-2">{m.description}</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 rounded-xl bg-[var(--muted)]/50">
+            <div className="p-3 rounded-xl bg-(--muted)/50">
               <div className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
                 <Calendar className="w-3 h-3" />
                 Date prevue
